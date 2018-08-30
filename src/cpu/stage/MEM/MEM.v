@@ -1,0 +1,23 @@
+`timescale 1ns / 1ps
+
+`include "../../define/global_def.v"
+
+module  MEM(
+    input   wire                rst,
+
+    // from EX stage
+    input   wire[`DATA_BUS]     result_in,
+    input   wire                write_reg_en_in,
+    input   wire[`REG_ADDR_BUS] write_reg_addr_in,
+
+    // to WB stage
+    output  wire[`DATA_BUS]     result_out,
+    output  wire                write_reg_en_out,
+    output  wire[`REG_ADDR_BUS] write_reg_addr_out
+);
+
+    assign  result_out          = (rst == `RST_ENABLE) ? `ZERO_WORD     : result_in;
+    assign  write_reg_en_out    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : write_reg_en_in;
+    assign  write_reg_addr_out  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : write_reg_addr_in;
+
+endmodule
