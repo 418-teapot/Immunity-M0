@@ -12,12 +12,13 @@ module  ID(
     input   wire[`ADDR_BUS]     addr,
     input   wire[`INST_BUS]     inst,
 
+    // from RegReadProxy
+    input   wire[`DATA_BUS]     reg_val_mux_data_1,
+    input   wire[`DATA_BUS]     reg_val_mux_data_2,
+
     // from or to RegFile
-    input   wire[`DATA_BUS]     reg_data_1,
     output  reg                 reg_read_en_1,
     output  reg [`REG_ADDR_BUS] reg_addr_1,
-
-    input   wire[`DATA_BUS]     reg_data_2,
     output  reg                 reg_read_en_2,
     output  reg [`REG_ADDR_BUS] reg_addr_2,
 
@@ -102,11 +103,11 @@ module  ID(
             case (inst_op)
                 
                 `OP_ORI:        begin
-                    operand_1   <= reg_data_1;
+                    operand_1   <= reg_val_mux_data_1;
                 end
 
                 `OP_SPECIAL:    begin
-                    operand_1   <= reg_data_1;
+                    operand_1   <= reg_val_mux_data_1;
                 end
 
                 default:    begin
@@ -129,7 +130,7 @@ module  ID(
                 end
 
                 `OP_SPECIAL:    begin
-                    operand_2   <= reg_data_2;
+                    operand_2   <= reg_val_mux_data_2;
                 end
 
                 default:        begin

@@ -52,6 +52,10 @@ module  Immunity(
     wire                wb_write_reg_en_i;
     wire[`REG_ADDR_BUS] wb_write_reg_addr_i;
 
+    // RegReadProxy
+    wire[`DATA_BUS]     reg_val_mux_data_1;
+    wire[`DATA_BUS]     reg_val_mux_data_2;
+
     // RegFile
     wire                read_en_1;
     wire[`REG_ADDR_BUS] read_addr_1;
@@ -91,11 +95,13 @@ module  Immunity(
         .addr               (id_addr_i),           
         .inst               (id_inst_i),
 
+        // from RegReadProxy
+        .reg_val_mux_data_1 (reg_val_mux_data_1),
+        .reg_val_mux_data_2 (reg_val_mux_data_2),
+
         // from or to RegFile
-        .reg_data_1         (read_data_1),    
         .reg_read_en_1      (read_en_1),
-        .reg_addr_1         (read_addr_1),
-        .reg_data_2         (read_data_2),    
+        .reg_addr_1         (read_addr_1), 
         .reg_read_en_2      (read_en_2),
         .reg_addr_2         (read_addr_2),
 
@@ -202,6 +208,32 @@ module  Immunity(
         .result_out         (write_data),
         .write_reg_en_out   (write_en),
         .write_reg_addr_out (write_addr)
+    );
+
+    RegReadProxy    regreadproxy0(
+        // input from ID stage
+        .reg_read_en_1      (read_en_1),
+        .reg_addr_1         (read_addr_1),
+        .reg_read_en_2      (read_en_2),
+        .reg_addr_2         (read_addr_2),
+
+        // input from RegFile
+        .reg_data_1         (read_data_1),
+        .reg_data_2         (read_data_2),
+
+        // input from EX stage
+        .ex_write_reg_en    (ex_write_reg_en_o),
+        .ex_write_reg_addr  (ex_write_reg_addr_o),
+        .ex_data            (ex_result_o),
+
+        // input from MEM stage
+        .mem_write_reg_en   (mem_write_reg_en_o),
+        .mem_write_reg_addr (mem_write_reg_addr_o),
+        .mem_data           (mem_result_o),
+
+        // data output
+        .reg_val_mux_data_1 (reg_val_mux_data_1),
+        .reg_val_mux_data_2 (reg_val_mux_data_2)
     );
 
     RegFile regfile0(
