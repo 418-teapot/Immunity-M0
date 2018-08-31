@@ -42,7 +42,7 @@ module  RegFile(
     end
 
     // read port 1 operation
-    always @ (posedge clk)  begin
+    always @ (*)  begin
         if (rst == `RST_ENABLE) begin
             read_data_1 <= `ZERO_WORD;
         end else if (read_addr_1 == `REG_ADDR_BUS_WIDTH'b0) begin
@@ -57,7 +57,7 @@ module  RegFile(
     end
 
     // read port 2 operation
-    always @ (posedge clk)  begin
+    always @ (*)  begin
         if (rst == `RST_ENABLE) begin
             read_data_2 <= `ZERO_WORD;
         end else if (read_addr_2 == `REG_ADDR_BUS_WIDTH'b0) begin
