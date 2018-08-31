@@ -36,16 +36,19 @@ module  ID_I(
     wire[`FUNCT_BUS]    inst_funct  = inst[`SEG_FUNCT];
     wire[`IMM_BUS]      inst_imm    = inst[`SEG_IMM];
 
-    wire[`DATA_BUS]     zero_extended_imm = {16'b0, inst_imm};
+    wire[`DATA_BUS]     zero_extended_imm       = {16'b0, inst_imm};
+    wire[`DATA_BUS]     zero_extended_imm_hi    = {inst_imm, 16'b0};
     
     assign  operand_1   = (rst == `RST_ENABLE) ? `ZERO_WORD : reg_val_mux_data_1;
-    assign  operand_2   = (rst == `RST_ENABLE) ? `ZERO_WORD : zero_extended_imm;
+    assign  operand_2   = (rst == `RST_ENABLE) ? `ZERO_WORD : 
+                          (inst_op == `OP_LUI) ? zero_extended_imm_hi : zero_extended_imm;
 
     // generate inst_i
     always @ (*)    begin
         case (inst_op)
 
-            `OP_ORI:    begin
+            `OP_ANDI,`OP_ORI,`OP_XORI,
+            `OP_LUI:    begin
                 inst_i  <= `TRUE;
             end
 
@@ -66,14 +69,14 @@ module  ID_I(
         end else    begin
             case (inst_op)
 
-                `OP_ORI:        begin
+                `OP_ANDI,`OP_ORI,`OP_XORI:        begin
                     reg_read_en_1   <= `READ_ENABLE;
                     reg_addr_1      <= inst_rs;
                     reg_read_en_2   <= `READ_DISABLE;
                     reg_addr_2      <= `ZERO_REG_ADDR;
                 end
 
-                default:        begin
+                default:        begin // OP_LUI
                     reg_read_en_1   <= `READ_DISABLE;
                     reg_addr_1      <= `ZERO_REG_ADDR;
                     reg_read_en_2   <= `READ_DISABLE;
@@ -92,7 +95,8 @@ module  ID_I(
         end else    begin
             case (inst_op)
 
-                `OP_ORI:        begin
+                `OP_ANDI,`OP_ORI,`OP_XORI,
+                `OP_LUI:        begin
                     write_reg_en    <= `WRITE_ENABLE;
                     write_reg_addr  <= inst_rt;
                 end

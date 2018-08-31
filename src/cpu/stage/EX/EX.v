@@ -29,14 +29,21 @@ module  EX(
     // generate result
     always @ (*)    begin
         case (funct)
+            // jump with link & logic
+            `FUNCT_AND: result  <= operand_1 & operand_2;
+            `FUNCT_OR:  result  <= operand_1 | operand_2;
+            `FUNCT_XOR: result  <= operand_1 ^ operand_2;
+            `FUNCT_NOR: result  <= ~(operand_1 | operand_2);
 
-            `FUNCT_OR:  begin
-                result  <= (operand_1 | operand_2);
-            end
+            // shift
+            `FUNCT_SLL: result  <= operand_2 << shamt;
+            `FUNCT_SRL: result  <= operand_2 >> shamt;
+            `FUNCT_SRA: result  <= ({32{operand_2[31]}} << (6'd32 - {1'b0, shamt})) | operand_2 >> shamt;
+            `FUNCT_SLLV: result <= operand_2 << operand_1[4:0];
+            `FUNCT_SRLV: result <= operand_2 >> operand_1[4:0];
+            `FUNCT_SRAV: result <= ({32{operand_2[31]}} << (6'd32 - {1'b0, operand_1[4:0]})) | operand_2 >> operand_1[4:0];
 
-            default:    begin
-                result  <= `ZERO_WORD;
-            end
+            default:    result  <= `ZERO_WORD;
 
         endcase
     end
