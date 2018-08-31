@@ -26,7 +26,6 @@ module  ID_R(
     output  reg [`REG_ADDR_BUS] reg_addr_2,
 
     // to EX stage
-    output  reg [`FUNCT_BUS]    funct,
     output  wire[`DATA_BUS]     operand_1,
     output  wire[`DATA_BUS]     operand_2,
     output  wire[`SHAMT_BUS]    shamt,
@@ -92,21 +91,6 @@ module  ID_R(
         end
     end
 
-    // generate funct
-    always @ (*)    begin
-        case (inst_op)
-
-            `OP_SPECIAL:    begin
-                funct   <= inst_funct;
-            end
-
-            default:        begin
-                funct   <= `FUNCT_NOP;
-            end
-
-        endcase
-    end
-
     // generate write information
     always @ (*)    begin
         if (rst == `RST_ENABLE) begin
@@ -128,5 +112,5 @@ module  ID_R(
             endcase
         end
     end
-    
+
 endmodule

@@ -24,7 +24,6 @@ module  ID_I(
     output  reg [`REG_ADDR_BUS] reg_addr_2,
 
     // to EX stage
-    output  reg [`FUNCT_BUS]    funct,
     output  wire[`DATA_BUS]     operand_1,
     output  wire[`DATA_BUS]     operand_2,
     output  reg                 write_reg_en,
@@ -83,21 +82,6 @@ module  ID_I(
 
             endcase
         end
-    end
-
-    // generate funct
-    always @ (*)    begin
-        case (inst_op)
-
-            `OP_ORI:        begin
-                funct   <= `FUNCT_OR;
-            end
-
-            default:        begin
-                funct   <= `FUNCT_NOP;
-            end
-
-        endcase
     end
 
     // generate write information

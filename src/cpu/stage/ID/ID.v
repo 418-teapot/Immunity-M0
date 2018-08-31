@@ -23,7 +23,7 @@ module  ID(
     output  reg [`REG_ADDR_BUS] reg_addr_2,
 
     // to EX stage
-    output  reg [`FUNCT_BUS]    funct,
+    output  wire[`FUNCT_BUS]    funct,
     output  reg [`DATA_BUS]     operand_1,
     output  reg [`DATA_BUS]     operand_2,
     output  reg [`SHAMT_BUS]    shamt,
@@ -33,8 +33,12 @@ module  ID(
 
     wire                    inst_r;
     wire                    inst_i;
-    wire                    inst_j = `FALSE;
+    wire                    inst_j  = `FALSE;
     wire[`INST_OP_TYPE_BUS] op_type = {inst_r, inst_i, inst_j};
+
+    wire[`INST_OP_BUS]  inst_op     = inst[`SEG_OPCODE];
+    wire[`REG_ADDR_BUS] inst_rt     = inst[`SEG_RT];
+    wire[`FUNCT_BUS]    inst_funct  = inst[`SEG_FUNCT];
 
     wire                    i_reg_read_en_1;
     wire[`REG_ADDR_BUS]     i_reg_addr_1;
@@ -76,7 +80,6 @@ module  ID(
         .reg_addr_2         (i_reg_addr_2),
 
         // to EX stage
-        .funct              (i_funct),
         .operand_1          (i_operand_1),
         .operand_2          (i_operand_2),
         .write_reg_en       (i_write_reg_en),
@@ -104,12 +107,18 @@ module  ID(
         .reg_addr_2         (r_reg_addr_2),
 
         // to EX stage
-        .funct              (r_funct),
         .operand_1          (r_operand_1),
         .operand_2          (r_operand_2),
         .shamt              (r_shamt),
         .write_reg_en       (r_write_reg_en),
         .write_reg_addr     (r_write_reg_addr)
+    );
+
+    FunctGen    functgen0(
+        .op                 (inst_op),
+        .funct_in           (inst_funct),
+        .rt                 (inst_rt),
+        .funct              (funct)
     );
 
     always @ (*)    begin
@@ -120,7 +129,6 @@ module  ID(
                 reg_addr_1      <= r_reg_addr_1;
                 reg_read_en_2   <= r_reg_read_en_2;
                 reg_addr_2      <= r_reg_addr_2;
-                funct           <= r_funct;
                 operand_1       <= r_operand_1;
                 operand_2       <= r_operand_2;
                 shamt           <= r_shamt;
@@ -133,7 +141,6 @@ module  ID(
                 reg_addr_1      <= i_reg_addr_1;
                 reg_read_en_2   <= i_reg_read_en_2;
                 reg_addr_2      <= i_reg_addr_2;
-                funct           <= i_funct;
                 operand_1       <= i_operand_1;
                 operand_2       <= i_operand_2;
                 shamt           <= `SHAMT_BUS_WIDTH'b0;
@@ -146,7 +153,6 @@ module  ID(
                 reg_addr_1      <= `ZERO_REG_ADDR;
                 reg_read_en_2   <= `READ_DISABLE;
                 reg_addr_2      <= `ZERO_REG_ADDR;
-                funct           <= `FUNCT_NOP;
                 operand_1       <= `ZERO_WORD;
                 operand_2       <= `ZERO_WORD;
                 shamt           <= `SHAMT_BUS_WIDTH'b0;
