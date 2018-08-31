@@ -31,152 +31,130 @@ module  ID(
     output  reg [`REG_ADDR_BUS] write_reg_addr
 );
 
-    wire[`INST_OP_BUS]  inst_op     = inst[`SEG_OPCODE];
-    wire[`REG_ADDR_BUS] inst_rs     = inst[`SEG_RS];
-    wire[`REG_ADDR_BUS] inst_rt     = inst[`SEG_RT];
-    wire[`REG_ADDR_BUS] inst_rd     = inst[`SEG_RD];
-    wire[`FUNCT_BUS]    inst_funct  = inst[`SEG_FUNCT];
-    wire[`IMM_BUS]      inst_imm    = inst[`SEG_IMM];
-    wire[`SHAMT_BUS]    inst_shamt  = inst[`SEG_SHAMT];
+    wire                    inst_r;
+    wire                    inst_i;
+    wire                    inst_j = `FALSE;
+    wire[`INST_OP_TYPE_BUS] op_type = {inst_r, inst_i, inst_j};
 
-    wire[`DATA_BUS]     zero_extended_imm = {16'b0, inst_imm};
+    wire                    i_reg_read_en_1;
+    wire[`REG_ADDR_BUS]     i_reg_addr_1;
+    wire                    i_reg_read_en_2;
+    wire[`REG_ADDR_BUS]     i_reg_addr_2;
+    wire[`FUNCT_BUS]        i_funct;
+    wire[`DATA_BUS]         i_operand_1;
+    wire[`DATA_BUS]         i_operand_2;
+    wire                    i_write_reg_en;
+    wire[`REG_ADDR_BUS]     i_write_reg_addr;
 
-    // generate read information
+    wire                    r_reg_read_en_1;
+    wire[`REG_ADDR_BUS]     r_reg_addr_1;
+    wire                    r_reg_read_en_2;
+    wire[`REG_ADDR_BUS]     r_reg_addr_2;
+    wire[`FUNCT_BUS]        r_funct;
+    wire[`DATA_BUS]         r_operand_1;
+    wire[`DATA_BUS]         r_operand_2;
+    wire[`SHAMT_BUS]        r_shamt;
+    wire                    r_write_reg_en;
+    wire[`REG_ADDR_BUS]     r_write_reg_addr;
+
+    ID_I    id_i0(
+        .rst                (rst),
+
+        // to ID
+        .inst_i             (inst_i),
+
+        // from IF stage
+        .inst               (inst),
+
+        // from RegReadProxy
+        .reg_val_mux_data_1 (reg_val_mux_data_1),
+
+        // from or to RegFile
+        .reg_read_en_1      (i_reg_read_en_1),
+        .reg_addr_1         (i_reg_addr_1),
+        .reg_read_en_2      (i_reg_read_en_2),
+        .reg_addr_2         (i_reg_addr_2),
+
+        // to EX stage
+        .funct              (i_funct),
+        .operand_1          (i_operand_1),
+        .operand_2          (i_operand_2),
+        .write_reg_en       (i_write_reg_en),
+        .write_reg_addr     (i_write_reg_addr)
+    );
+
+    ID_R    id_r0(
+        .rst                (rst),
+
+        // to ID
+        .inst_r             (inst_r),
+
+        // from IF stage
+        .addr               (addr),
+        .inst               (inst),
+
+        // from RegReadProxy
+        .reg_val_mux_data_1 (reg_val_mux_data_1),
+        .reg_val_mux_data_2 (reg_val_mux_data_2),
+
+        // from or to RegFile
+        .reg_read_en_1      (r_reg_read_en_1),
+        .reg_addr_1         (r_reg_addr_1),
+        .reg_read_en_2      (r_reg_read_en_2),
+        .reg_addr_2         (r_reg_addr_2),
+
+        // to EX stage
+        .funct              (r_funct),
+        .operand_1          (r_operand_1),
+        .operand_2          (r_operand_2),
+        .shamt              (r_shamt),
+        .write_reg_en       (r_write_reg_en),
+        .write_reg_addr     (r_write_reg_addr)
+    );
+
     always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            reg_read_en_1   <= `READ_DISABLE;
-            reg_addr_1      <= `ZERO_REG_ADDR;
-            reg_read_en_2   <= `READ_DISABLE;
-            reg_addr_2      <= `ZERO_REG_ADDR;
-        end else    begin
-            case (inst_op)
-
-                `OP_ORI:        begin
-                    reg_read_en_1   <= `READ_ENABLE;
-                    reg_addr_1      <= inst_rs;
-                    reg_read_en_2   <= `READ_DISABLE;
-                    reg_addr_2      <= `ZERO_REG_ADDR;
-                end
-
-                `OP_SPECIAL:    begin
-                    reg_read_en_1   <= `READ_ENABLE;
-                    reg_addr_1      <= inst_rs;
-                    reg_read_en_2   <= `READ_ENABLE;
-                    reg_addr_2      <= inst_rt;
-                end
-
-                default:        begin
-                    reg_read_en_1   <= `READ_DISABLE;
-                    reg_addr_1      <= `ZERO_REG_ADDR;
-                    reg_read_en_2   <= `READ_DISABLE;
-                    reg_addr_2      <= `ZERO_REG_ADDR;
-                end
-
-            endcase
-        end
-    end
-
-    // generate funct
-    always @ (*)    begin
-        case (inst_op)
-
-            `OP_SPECIAL:    begin
-                funct   <= inst_funct;
+        case (op_type)
+            
+            `TYPE_R:    begin
+                reg_read_en_1   <= r_reg_read_en_1;
+                reg_addr_1      <= r_reg_addr_1;
+                reg_read_en_2   <= r_reg_read_en_2;
+                reg_addr_2      <= r_reg_addr_2;
+                funct           <= r_funct;
+                operand_1       <= r_operand_1;
+                operand_2       <= r_operand_2;
+                shamt           <= r_shamt;
+                write_reg_en    <= r_write_reg_en;
+                write_reg_addr  <= r_write_reg_addr;
             end
 
-            `OP_ORI:        begin
-                funct   <= `FUNCT_OR;
+            `TYPE_I:    begin
+                reg_read_en_1   <= i_reg_read_en_1;
+                reg_addr_1      <= i_reg_addr_1;
+                reg_read_en_2   <= i_reg_read_en_2;
+                reg_addr_2      <= i_reg_addr_2;
+                funct           <= i_funct;
+                operand_1       <= i_operand_1;
+                operand_2       <= i_operand_2;
+                shamt           <= `SHAMT_BUS_WIDTH'b0;
+                write_reg_en    <= i_write_reg_en;
+                write_reg_addr  <= i_write_reg_addr;
             end
 
-            default:        begin
-                funct   <= `FUNCT_NOP;
+            default:    begin
+                reg_read_en_1   <= `READ_DISABLE;
+                reg_addr_1      <= `ZERO_REG_ADDR;
+                reg_read_en_2   <= `READ_DISABLE;
+                reg_addr_2      <= `ZERO_REG_ADDR;
+                funct           <= `FUNCT_NOP;
+                operand_1       <= `ZERO_WORD;
+                operand_2       <= `ZERO_WORD;
+                shamt           <= `SHAMT_BUS_WIDTH'b0;
+                write_reg_en    <= `WRITE_DISABLE;
+                write_reg_addr  <= `ZERO_REG_ADDR;
             end
 
         endcase
     end
-
-    // generate operand_1
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            operand_1   <= `ZERO_WORD;
-        end else    begin
-            case (inst_op)
-                
-                `OP_ORI:        begin
-                    operand_1   <= reg_val_mux_data_1;
-                end
-
-                `OP_SPECIAL:    begin
-                    operand_1   <= reg_val_mux_data_1;
-                end
-
-                default:    begin
-                    operand_1   <= `ZERO_WORD;
-                end
-
-            endcase
-        end
-    end
-
-    // generate operand_2
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            operand_2   <= `ZERO_WORD;
-        end else    begin
-            case (inst_op)
-
-                `OP_ORI:        begin
-                    operand_2   <= zero_extended_imm;
-                end
-
-                `OP_SPECIAL:    begin
-                    operand_2   <= reg_val_mux_data_2;
-                end
-
-                default:        begin
-                    operand_2   <= `ZERO_WORD;
-                end
-
-            endcase
-        end
-    end
-
-    // generate write information
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            write_reg_en    <= `WRITE_DISABLE;
-            write_reg_addr  <= `ZERO_REG_ADDR;
-        end else    begin
-            case (inst_op)
-
-                `OP_ORI:        begin
-                    write_reg_en    <= `WRITE_ENABLE;
-                    write_reg_addr  <= inst_rt;
-                end
-
-                `OP_SPECIAL:    begin
-                    write_reg_en    <= `WRITE_ENABLE;
-                    write_reg_addr  <= inst_rd;
-                end
-
-                default:        begin
-                    write_reg_en    <= `WRITE_DISABLE;
-                    write_reg_addr  <= `ZERO_REG_ADDR;
-                end
-
-            endcase
-        end
-    end
-
-    // generate shamt
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            shamt   <= `SHAMT_BUS_WIDTH'b0;
-        end else if (inst_op == `OP_SPECIAL)    begin
-            shamt   <= inst_shamt;
-        end else    begin
-            shamt   <= `SHAMT_BUS_WIDTH'b0;
-        end
-    end
-
+    
 endmodule
