@@ -8,6 +8,9 @@
 `define CHIP_ENABLE             1'b1
 `define CHIP_DISABLE            1'b0
 
+`define TRUE                    1'b1
+`define FALSE                   1'b0
+
 `define ZERO_WORD               32'h0
 
 // address bus
@@ -42,6 +45,8 @@
 `define CP0_ADDR_BUS_WIDTH      5
 
 // instruction information bus
+`define INST_OP_TYPE_BUS        2:0
+`define INST_OP_TYPE_BUS_WIDTH  3
 `define INST_OP_BUS             5:0
 `define INST_OP_BUS_WIDTH       6
 `define FUNCT_BUS               5:0
@@ -50,6 +55,11 @@
 `define SHAMT_BUS_WIDTH         5
 `define IMM_BUS                 15:0
 `define IMM_BUS_WIDTH           16
+
+// instruction type
+`define TYPE_R                  3'b100
+`define TYPE_I                  3'b010
+`define TYPE_J                  3'b001
 
 // stall signal bus
 `define STALL_BUS               5:0
