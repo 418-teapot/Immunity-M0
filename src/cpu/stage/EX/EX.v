@@ -29,7 +29,6 @@ module  EX(
 
     reg [`DATA_BUS] result;
     reg             write_reg_en;
-    reg[`DATA_BUS]  hi_data;
 
     assign  write_reg_en_out    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : write_reg_en;
     assign  write_reg_addr_out  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : write_reg_addr_in;
