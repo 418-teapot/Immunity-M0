@@ -11,8 +11,8 @@
 `define FUNCT_JALR      6'b001001
 
 // move
-`define FUNCT_MOVZ      6'b001010   // unused
-`define FUNCT_MOVN      6'b001011   // unused
+`define FUNCT_MOVZ      6'b001010
+`define FUNCT_MOVN      6'b001011
 
 // interruption
 `define FUNCT_SYSCALL   6'b001100

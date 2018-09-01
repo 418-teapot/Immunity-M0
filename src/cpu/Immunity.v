@@ -37,24 +37,40 @@ module  Immunity(
     wire[`DATA_BUS]     ex_result_o;
     wire                ex_write_reg_en_o;
     wire[`REG_ADDR_BUS] ex_write_reg_addr_o;
+    wire                ex_write_hilo_en_o;
+    wire[`DATA_BUS]     ex_write_hi_data_o;
+    wire[`DATA_BUS]     ex_write_lo_data_o;
 
     // MEM stage
     wire[`DATA_BUS]     mem_result_i;
     wire                mem_write_reg_en_i;
     wire[`REG_ADDR_BUS] mem_write_reg_addr_i;
+    wire                mem_write_hilo_en_i;
+    wire[`DATA_BUS]     mem_write_hi_data_i;
+    wire[`DATA_BUS]     mem_write_lo_data_i;
 
     wire[`DATA_BUS]     mem_result_o;
     wire                mem_write_reg_en_o;
     wire[`REG_ADDR_BUS] mem_write_reg_addr_o;
+    wire                mem_write_hilo_en_o;
+    wire[`DATA_BUS]     mem_write_hi_data_o;
+    wire[`DATA_BUS]     mem_write_lo_data_o;
 
     // WB stage
     wire[`DATA_BUS]     wb_result_i;
     wire                wb_write_reg_en_i;
     wire[`REG_ADDR_BUS] wb_write_reg_addr_i;
+    wire                wb_write_hilo_en_i;
+    wire[`DATA_BUS]     wb_write_hi_data_i;
+    wire[`DATA_BUS]     wb_write_lo_data_i;
 
     // RegReadProxy
     wire[`DATA_BUS]     reg_val_mux_data_1;
     wire[`DATA_BUS]     reg_val_mux_data_2;
+
+    // HILOReadProxy
+    wire[`DATA_BUS]     hi_val_mux_data;
+    wire[`DATA_BUS]     lo_val_mux_data;
 
     // RegFile
     wire                read_en_1;
@@ -67,6 +83,14 @@ module  Immunity(
     wire                write_en;
     wire[`REG_ADDR_BUS] write_addr;
     wire[`DATA_BUS]     write_data;
+
+    // HILO
+    wire                write_hilo_en;
+    wire[`DATA_BUS]     write_hi_data;
+    wire[`DATA_BUS]     write_lo_data;
+
+    wire[`DATA_BUS]     read_hi_data;
+    wire[`DATA_BUS]     read_lo_data;
 
     PC  pc0(
         .clk                (clk),                  
@@ -146,10 +170,17 @@ module  Immunity(
         .write_reg_en_in    (ex_write_reg_en_i),
         .write_reg_addr_in  (ex_write_reg_addr_i),
 
+        // from HILOReadProxy
+        .hi_val_mux_data    (hi_val_mux_data),
+        .lo_val_mux_data    (lo_val_mux_data),
+
         // to MEM stage
         .result_out         (ex_result_o),
         .write_reg_en_out   (ex_write_reg_en_o),
-        .write_reg_addr_out (ex_write_reg_addr_o)
+        .write_reg_addr_out (ex_write_reg_addr_o),
+        .write_hilo_en_out  (ex_write_hilo_en_o),
+        .write_hi_data_out  (ex_write_hi_data_o),
+        .write_lo_data_out  (ex_write_lo_data_o)
     );
 
     EX_MEM  ex_mem0(
@@ -160,11 +191,17 @@ module  Immunity(
         .result_in          (ex_result_o),
         .write_reg_en_in    (ex_write_reg_en_o),
         .write_reg_addr_in  (ex_write_reg_addr_o),
+        .write_hilo_en_in   (ex_write_hilo_en_o),
+        .write_hi_data_in   (ex_write_hi_data_o),
+        .write_lo_data_in   (ex_write_lo_data_o),
 
         // to MEM stage
         .result_out         (mem_result_i),
         .write_reg_en_out   (mem_write_reg_en_i),
-        .write_reg_addr_out (mem_write_reg_addr_i)
+        .write_reg_addr_out (mem_write_reg_addr_i),
+        .write_hilo_en_out  (mem_write_hilo_en_i),
+        .write_hi_data_out  (mem_write_hi_data_i),
+        .write_lo_data_out  (mem_write_lo_data_i)
     );
 
     MEM mem0(
@@ -174,11 +211,17 @@ module  Immunity(
         .result_in          (mem_result_i),
         .write_reg_en_in    (mem_write_reg_en_i),
         .write_reg_addr_in  (mem_write_reg_addr_i),
+        .write_hilo_en_in   (mem_write_hilo_en_i),
+        .write_hi_data_in   (mem_write_hi_data_i),
+        .write_lo_data_in   (mem_write_lo_data_i),
 
         // to WB stage
         .result_out         (mem_result_o),
         .write_reg_en_out   (mem_write_reg_en_o),
-        .write_reg_addr_out (mem_write_reg_addr_o)
+        .write_reg_addr_out (mem_write_reg_addr_o),
+        .write_hilo_en_out  (mem_write_hilo_en_o),
+        .write_hi_data_out  (mem_write_hi_data_o),
+        .write_lo_data_out  (mem_write_lo_data_o)
     );
 
     MEM_WB  mem_wb0(
@@ -189,11 +232,17 @@ module  Immunity(
         .result_in          (mem_result_o),
         .write_reg_en_in    (mem_write_reg_en_o),
         .write_reg_addr_in  (mem_write_reg_addr_o),
+        .write_hilo_en_in   (mem_write_hilo_en_o),
+        .write_hi_data_in   (mem_write_hi_data_o),
+        .write_lo_data_in   (mem_write_lo_data_o),
 
         // to WB stage
         .result_out         (wb_result_i),
         .write_reg_en_out   (wb_write_reg_en_i),
-        .write_reg_addr_out (wb_write_reg_addr_i)
+        .write_reg_addr_out (wb_write_reg_addr_i),
+        .write_hilo_en_out  (wb_write_hilo_en_i),
+        .write_hi_data_out  (wb_write_hi_data_i),
+        .write_lo_data_out  (wb_write_lo_data_i)
     );
 
     WB  wb0(
@@ -203,11 +252,19 @@ module  Immunity(
         .result_in          (wb_result_i),
         .write_reg_en_in    (wb_write_reg_en_i),
         .write_reg_addr_in  (wb_write_reg_addr_i),
+        .write_hilo_en_in   (wb_write_hilo_en_i),
+        .write_hi_data_in   (wb_write_hi_data_i),
+        .write_lo_data_in   (wb_write_lo_data_i),
 
         // to RegFile
         .result_out         (write_data),
         .write_reg_en_out   (write_en),
-        .write_reg_addr_out (write_addr)
+        .write_reg_addr_out (write_addr),
+
+        // to HILO
+        .write_hilo_en_out  (write_hilo_en),
+        .write_hi_data_out  (write_hi_data),
+        .write_lo_data_out  (write_lo_data)
     );
 
     RegReadProxy    regreadproxy0(
@@ -236,6 +293,26 @@ module  Immunity(
         .reg_val_mux_data_2 (reg_val_mux_data_2)
     );
 
+    HILOReadProxy   hiloreadproxy(
+        // input from HI & LO register
+        .read_hi_data       (read_hi_data),
+        .read_lo_data       (read_lo_data),
+
+        // input from MEM stage
+        .mem_write_hilo_en  (mem_write_hilo_en_o),
+        .mem_write_hi_data  (mem_write_hi_data_o),
+        .mem_write_lo_data  (mem_write_lo_data_o),
+
+        // input from WB stage
+        .wb_write_hilo_en   (write_hilo_en),
+        .wb_write_hi_data   (write_hi_data),
+        .wb_write_lo_data   (write_lo_data),
+
+        // data output
+        .hi_val_mux_data    (hi_val_mux_data),
+        .lo_val_mux_data    (lo_val_mux_data)
+    );
+
     RegFile regfile0(
         .clk                (clk),
         .rst                (rst),
@@ -254,6 +331,20 @@ module  Immunity(
         .write_en           (write_en),
         .write_addr         (write_addr),
         .write_data         (write_data)
+    );
+
+    HILO    hilo0(
+        .clk                (clk),
+        .rst                (rst),
+
+        // write port
+        .write_hilo_en      (write_hilo_en),
+        .write_hi_data      (write_hi_data),
+        .write_lo_data      (write_lo_data),
+
+        // read port
+        .read_hi_data       (read_hi_data),
+        .read_lo_data       (read_lo_data)
     );
 
 endmodule
