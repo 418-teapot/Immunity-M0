@@ -26,6 +26,7 @@ module  Adder(
     assign  overflow_sum    = (!operand_1[31] && !operand_2_mux[31] &&  result_sum[31]) ||
                               ( operand_1[31] &&  operand_2_mux[31] && !result_sum[31]);
     
+    // flag of operand_1 < operand_2
     assign  operand_1_lt_operand_2  = (funct == `FUNCT_SLT) ?
                                       (( operand_1[31] && !operand_2[31])   ||
                                        (!operand_1[31] && !operand_2[31] && result_sum[31]) ||
