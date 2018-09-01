@@ -33,7 +33,7 @@
 // coprocessor
 `define OP_CP0        6'b010000
 
-// r-type (SPECIAL2, unused)
+// r-type (SPECIAL2)
 `define OP_SPECIAL2   6'b011100
 
 // memory accessing

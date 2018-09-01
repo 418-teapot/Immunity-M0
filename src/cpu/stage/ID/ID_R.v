@@ -52,7 +52,7 @@ module  ID_R(
     always @ (*)    begin
         case (inst_op)
 
-            `OP_SPECIAL:    begin
+            `OP_SPECIAL, `OP_SPECIAL2:    begin
                 inst_r  <= `TRUE;
             end
 
@@ -73,7 +73,7 @@ module  ID_R(
         end else    begin
             case (inst_op)
 
-                `OP_SPECIAL:    begin
+                `OP_SPECIAL, `OP_SPECIAL2:    begin
                     reg_read_en_1   <= `READ_ENABLE;
                     reg_addr_1      <= inst_rs;
                     reg_read_en_2   <= `READ_ENABLE;
@@ -99,7 +99,7 @@ module  ID_R(
         end else    begin
             case (inst_op)
 
-                `OP_SPECIAL:    begin
+                `OP_SPECIAL, `OP_SPECIAL2:    begin
                     write_reg_en    <= `WRITE_ENABLE;
                     write_reg_addr  <= inst_rd;
                 end
