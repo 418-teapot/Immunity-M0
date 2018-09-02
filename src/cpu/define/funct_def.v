@@ -47,12 +47,20 @@
 `define FUNCT_SLTU      6'b101011
 
 // special2 inst
+`define FUNCT_MADD      6'b000000
+`define FUNCT_MADDU     6'b000001
 `define FUNCT_MUL       6'b000010
+`define FUNCT_MSUB      6'b000100
+`define FUNCT_MSUBU     6'b000101
 `define FUNCT_CLZ       6'b100000
 `define FUNCT_CLO       6'b100001
 
 // NOTE: improper usage
-`define FUNCT2_MUL      6'b111100 
+`define FUNCT2_MADD     6'b111000
+`define FUNCT2_MADDU    6'b111001
+`define FUNCT2_MUL      6'b111010
+`define FUNCT2_MSUB     6'b111011
+`define FUNCT2_MSUBU    6'b111100
 `define FUNCT2_CLZ      6'b111101
 `define FUNCT2_CLO      6'b111110
 // it's NOP because '111111' is meaningless in current MIPS ISA

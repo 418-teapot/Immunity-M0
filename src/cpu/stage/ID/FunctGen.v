@@ -18,10 +18,14 @@ module FunctGen(
             `OP_SPECIAL:    funct <= funct_in;
             `OP_SPECIAL2:   begin
                 case (funct_in)
-                    `FUNCT_MUL: funct   <= `FUNCT2_MUL;
-                    `FUNCT_CLZ: funct   <= `FUNCT2_CLZ;
-                    `FUNCT_CLO: funct   <= `FUNCT2_CLO;
-                    default:    funct   <= `FUNCT_NOP;
+                    `FUNCT_MADD:    funct   <= `FUNCT2_MADD;
+                    `FUNCT_MADDU:   funct   <= `FUNCT2_MADDU;
+                    `FUNCT_MUL:     funct   <= `FUNCT2_MUL;
+                    `FUNCT_MSUB:    funct   <= `FUNCT2_MSUB;
+                    `FUNCT_MSUBU:   funct   <= `FUNCT2_MSUBU;
+                    `FUNCT_CLZ:     funct   <= `FUNCT2_CLZ;
+                    `FUNCT_CLO:     funct   <= `FUNCT2_CLO;
+                    default:        funct   <= `FUNCT_NOP;
                 endcase
             end
             `OP_ORI:        funct <= `FUNCT_OR;

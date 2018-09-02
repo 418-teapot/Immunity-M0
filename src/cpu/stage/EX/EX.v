@@ -30,8 +30,6 @@ module  EX(
     output  reg [`DATA_BUS]     write_lo_data_out
 );
 
-    assign  ex_stall_request    = `NO_STOP;
-
     reg [`DATA_BUS] result;
     reg             write_reg_en;
 
@@ -49,6 +47,9 @@ module  EX(
     wire[`DOUBLE_DATA_BUS]  result_mult;   
     // bit counts of operand_1
     wire[`DATA_BUS] result_count;
+    // stall request
+
+    assign  ex_stall_request    = `NO_STOP;
 
     Adder   adder0(
         .funct                  (funct),
@@ -60,11 +61,13 @@ module  EX(
     );
 
     Multiplier  multiplier0(
-        .rst            (rst),
-        .funct          (funct),
-        .operand_1      (operand_1),
-        .operand_2      (operand_2),
-        .result_mult    (result_mult)
+        .rst                (rst),
+        .funct              (funct),
+        .operand_1          (operand_1),
+        .operand_2          (operand_2),
+        .hi_val_mux_data    (hi_val_mux_data),
+        .lo_val_mux_data    (lo_val_mux_data),
+        .result_mult        (result_mult)
     );
 
     BitCounter  bitcounter0(
@@ -116,7 +119,8 @@ module  EX(
             `FUNCT_MOVZ:    write_reg_en <= (operand_2 == `ZERO_WORD) ? `WRITE_ENABLE : `WRITE_DISABLE;
             `FUNCT_ADD, `FUNCT_SUB:
                             write_reg_en <= !overflow_sum;
-            `FUNCT_MULT, `FUNCT_MULTU:
+            `FUNCT_MULT, `FUNCT_MULTU, 
+            `FUNCT2_MADD, `FUNCT2_MADDU, `FUNCT2_MSUB, `FUNCT2_MSUBU:
                             write_reg_en <= `WRITE_DISABLE;
             default:        write_reg_en <= write_reg_en_in;
         endcase
@@ -135,7 +139,9 @@ module  EX(
                 write_hi_data_out   <= hi_val_mux_data;
                 write_lo_data_out   <= operand_1;
             end
-            `FUNCT_MULT, `FUNCT_MULTU:  begin
+            `FUNCT_MULT, `FUNCT_MULTU, 
+            `FUNCT2_MADD, `FUNCT2_MADDU,
+            `FUNCT2_MSUB, `FUNCT2_MSUBU:    begin
                 write_hilo_en_out   <= `WRITE_ENABLE;
                 write_hi_data_out   <= result_mult[63:32];
                 write_lo_data_out   <= result_mult[31:0];
