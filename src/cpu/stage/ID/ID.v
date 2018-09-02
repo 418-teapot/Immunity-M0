@@ -16,7 +16,10 @@ module  ID(
     input   wire[`DATA_BUS]     reg_val_mux_data_1,
     input   wire[`DATA_BUS]     reg_val_mux_data_2,
 
-    // from or to RegFile
+    // stall request
+    output  wire                id_stall_request,
+
+    // to RegFile
     output  reg                 reg_read_en_1,
     output  reg [`REG_ADDR_BUS] reg_addr_1,
     output  reg                 reg_read_en_2,
@@ -30,6 +33,8 @@ module  ID(
     output  reg                 write_reg_en,
     output  reg [`REG_ADDR_BUS] write_reg_addr
 );
+
+    assign  id_stall_request    = `NO_STOP;
 
     wire                    inst_r;
     wire                    inst_i;

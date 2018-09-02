@@ -11,6 +11,9 @@
 `define TRUE                    1'b1
 `define FALSE                   1'b0
 
+`define STOP                    1'b1
+`define NO_STOP                 1'b0
+
 `define ZERO_WORD               32'h0
 
 // address bus

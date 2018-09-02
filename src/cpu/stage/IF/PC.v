@@ -5,6 +5,11 @@
 module  PC(
     input   wire            clk,
     input   wire            rst,
+
+    // stall signal
+    input   wire            stall_pc,
+
+    // to ROM
     output  reg             rom_en,
     output  reg [`ADDR_BUS] addr
 );
@@ -20,7 +25,7 @@ module  PC(
     always @ (posedge clk)  begin
         if (rom_en == `CHIP_DISABLE)    begin
             addr    <= `ZERO_WORD;
-        end else    begin
+        end else if (stall_pc == `NO_STOP)  begin
             addr    <= addr + 4'h4;
         end
     end

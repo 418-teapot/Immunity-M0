@@ -92,9 +92,24 @@ module  Immunity(
     wire[`DATA_BUS]     read_hi_data;
     wire[`DATA_BUS]     read_lo_data;
 
+    // stall signals
+    wire                id_stall_request;
+    wire                ex_stall_request;
+    wire                stall_pc;
+    wire                stall_if;
+    wire                stall_id;
+    wire                stall_ex;
+    wire                stall_mem;
+    wire                stall_wb;
+
     PC  pc0(
         .clk                (clk),                  
         .rst                (rst),
+
+        // stall signal
+        .stall_pc           (stall_pc),
+
+        // to ROM
         .rom_en             (rom_en),            
         .addr               (pc_addr)
     );
@@ -102,6 +117,10 @@ module  Immunity(
     IF_ID   if_id0(
         .clk                (clk),                  
         .rst                (rst),
+
+        // stall signals
+        .stall_current_stage(stall_if),
+        .stall_next_stage   (stall_id),
 
         // from IF stage
         .addr_i             (pc_addr),          
@@ -123,7 +142,10 @@ module  Immunity(
         .reg_val_mux_data_1 (reg_val_mux_data_1),
         .reg_val_mux_data_2 (reg_val_mux_data_2),
 
-        // from or to RegFile
+        // stall request
+        .id_stall_request   (id_stall_request),
+
+        // to RegFile
         .reg_read_en_1      (read_en_1),
         .reg_addr_1         (read_addr_1), 
         .reg_read_en_2      (read_en_2),
@@ -141,6 +163,10 @@ module  Immunity(
     ID_EX   id_ex0(
         .clk                (clk),
         .rst                (rst),
+
+        // stall signals
+        .stall_current_stage(stall_id),
+        .stall_next_stage   (stall_ex),
 
         // from ID stage
         .funct_in           (id_funct_o),
@@ -174,6 +200,9 @@ module  Immunity(
         .hi_val_mux_data    (hi_val_mux_data),
         .lo_val_mux_data    (lo_val_mux_data),
 
+        // stall request
+        .ex_stall_request   (ex_stall_request),
+
         // to MEM stage
         .result_out         (ex_result_o),
         .write_reg_en_out   (ex_write_reg_en_o),
@@ -186,6 +215,10 @@ module  Immunity(
     EX_MEM  ex_mem0(
         .clk                (clk),
         .rst                (rst),
+
+        // stall signals
+        .stall_current_stage(stall_ex),
+        .stall_next_stage   (stall_mem),
 
         // from EX stage
         .result_in          (ex_result_o),
@@ -227,6 +260,10 @@ module  Immunity(
     MEM_WB  mem_wb0(
         .clk                (clk),
         .rst                (rst),
+
+        // stall signals
+        .stall_current_stage(stall_mem),
+        .stall_next_stage   (stall_wb),
 
         // from MEM stage
         .result_in          (mem_result_o),
@@ -345,6 +382,22 @@ module  Immunity(
         // read port
         .read_hi_data       (read_hi_data),
         .read_lo_data       (read_lo_data)
+    );
+
+    PipelineController  pipelinecontroller0(
+        .rst                (rst),
+        
+        // stall request signals
+        .id_stall_request   (id_stall_request),
+        .ex_stall_request   (ex_stall_request),
+
+        // stall signals for each middle-stage
+        .stall_pc           (stall_pc),
+        .stall_if           (stall_if),
+        .stall_id           (stall_id),
+        .stall_ex           (stall_ex),
+        .stall_mem          (stall_mem),
+        .stall_wb           (stall_wb)
     );
 
 endmodule

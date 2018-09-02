@@ -18,6 +18,9 @@ module  EX(
     input   wire[`DATA_BUS]     hi_val_mux_data,
     input   wire[`DATA_BUS]     lo_val_mux_data,
 
+    // stall request
+    output  wire                ex_stall_request,
+
     // to MEM stage
     output  wire[`DATA_BUS]     result_out,
     output  wire                write_reg_en_out,
@@ -26,6 +29,8 @@ module  EX(
     output  reg [`DATA_BUS]     write_hi_data_out,
     output  reg [`DATA_BUS]     write_lo_data_out
 );
+
+    assign  ex_stall_request    = `NO_STOP;
 
     reg [`DATA_BUS] result;
     reg             write_reg_en;
