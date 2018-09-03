@@ -23,7 +23,7 @@ module  PipelineDeliver
             out <= 0;
         end else if (stall_current_stage == `STOP && stall_next_stage == `NO_STOP)  begin
             out <= 0;
-        end else    begin
+        end else if (stall_current_stage == `NO_STOP)begin
             out <= in;
         end
     end

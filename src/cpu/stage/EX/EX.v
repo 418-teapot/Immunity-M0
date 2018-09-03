@@ -4,6 +4,7 @@
 `include "../../define/funct_def.v"
 
 module  EX(
+    input   wire                clk,
     input   wire                rst,
 
     // from ID stage
@@ -47,9 +48,12 @@ module  EX(
     wire[`DOUBLE_DATA_BUS]  result_mult;   
     // bit counts of operand_1
     wire[`DATA_BUS] result_count;
+    // quotient & remainder of operand_1 / operand_2
+    wire[`DOUBLE_DATA_BUS]  result_div;
     // stall request
+    wire    div_stall_request;
 
-    assign  ex_stall_request    = `NO_STOP;
+    assign  ex_stall_request    = div_stall_request;
 
     Adder   adder0(
         .funct                  (funct),
@@ -74,6 +78,17 @@ module  EX(
         .funct          (funct),
         .operand_1      (operand_1),
         .result_count   (result_count)
+    );
+
+    Divider divider0(
+        .clk                (clk),
+        .rst                (rst),
+        .funct              (funct),
+        .operand_1          (operand_1),
+        .operand_2          (operand_2),
+        .cancel_div         (1'b0),
+        .div_stall_request  (div_stall_request),
+        .result_div         (result_div)
     );
 
     // generate result
@@ -120,7 +135,8 @@ module  EX(
             `FUNCT_ADD, `FUNCT_SUB:
                             write_reg_en <= !overflow_sum;
             `FUNCT_MULT, `FUNCT_MULTU, 
-            `FUNCT2_MADD, `FUNCT2_MADDU, `FUNCT2_MSUB, `FUNCT2_MSUBU:
+            `FUNCT2_MADD, `FUNCT2_MADDU, `FUNCT2_MSUB, `FUNCT2_MSUBU,
+            `FUNCT_DIV, `FUNCT_DIVU:
                             write_reg_en <= `WRITE_DISABLE;
             default:        write_reg_en <= write_reg_en_in;
         endcase
@@ -145,6 +161,11 @@ module  EX(
                 write_hilo_en_out   <= `WRITE_ENABLE;
                 write_hi_data_out   <= result_mult[63:32];
                 write_lo_data_out   <= result_mult[31:0];
+            end
+            `FUNCT_DIV, `FUNCT_DIVU:    begin
+                write_hilo_en_out   <= `WRITE_ENABLE;
+                write_hi_data_out   <= result_div[63:32];
+                write_lo_data_out   <= result_div[31:0];
             end
             default:    begin
                 write_hilo_en_out   <= `WRITE_DISABLE;

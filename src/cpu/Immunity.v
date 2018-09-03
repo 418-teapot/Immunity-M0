@@ -186,6 +186,7 @@ module  Immunity(
     );
 
     EX  ex0(
+        .clk                (clk),
         .rst                (rst),
 
         // from ID stage
