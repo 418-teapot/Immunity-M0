@@ -48,7 +48,7 @@ module  ID_Branch(
     assign  operand_1   = link_addr;
     assign  operand_2   = `ZERO_WORD;
 
-    wire[`DATA_BUS] sign_extend_offset  = {{14{inst[15]}}, inst_offset, 2'b00};
+    wire[`DATA_BUS] sign_extended_offset  = {{14{inst[15]}}, inst_offset, 2'b00};
 
     // generate inst_branch
     always @ (*)    begin
@@ -158,28 +158,28 @@ module  ID_Branch(
                 `OP_BEQ:    begin
                     if (reg_val_mux_data_1 == reg_val_mux_data_2)   begin
                         branch_flag <= `TRUE;
-                        branch_addr <= pc_plus_4 + sign_extend_offset;
+                        branch_addr <= pc_plus_4 + sign_extended_offset;
                     end
                 end
 
                 `OP_BNE:    begin
                     if (reg_val_mux_data_1 != reg_val_mux_data_2)   begin
                         branch_flag <= `TRUE;
-                        branch_addr <= pc_plus_4 + sign_extend_offset;
+                        branch_addr <= pc_plus_4 + sign_extended_offset;
                     end
                 end
 
                 `OP_BGTZ:   begin
                     if (reg_val_mux_data_1[31] == 1'b0 && reg_val_mux_data_1 != `ZERO_WORD) begin
                         branch_flag <= `TRUE;
-                        branch_addr <= pc_plus_4 + sign_extend_offset;
+                        branch_addr <= pc_plus_4 + sign_extended_offset;
                     end
                 end
 
                 `OP_BLEZ:   begin
                     if (reg_val_mux_data_1[31] == 1'b1 && reg_val_mux_data_1 == `ZERO_WORD) begin
                         branch_flag <= `TRUE;
-                        branch_addr <= pc_plus_4 + sign_extend_offset;
+                        branch_addr <= pc_plus_4 + sign_extended_offset;
                     end
                 end
 
@@ -189,14 +189,14 @@ module  ID_Branch(
                         `REGIMM_BGEZ, `REGIMM_BGEZAL:   begin
                             if (reg_val_mux_data_1[31] == 1'b0) begin
                                 branch_flag <= `TRUE;
-                                branch_addr <= pc_plus_4 + sign_extend_offset;
+                                branch_addr <= pc_plus_4 + sign_extended_offset;
                             end
                         end
                         
                         `REGIMM_BLTZ, `REGIMM_BLTZAL:   begin
                             if (reg_val_mux_data_1[31] == 1'b1) begin
                                 branch_flag <= `TRUE;
-                                branch_addr <= pc_plus_4 + sign_extend_offset;
+                                branch_addr <= pc_plus_4 + sign_extended_offset;
                             end
                         end
 

@@ -26,7 +26,14 @@ module  ID_I(
     output  wire                branch_flag,
     output  wire[`ADDR_BUS]     branch_addr,
 
+    // to RAM
+    output  wire                ram_en,
+    output  wire                ram_write_en,
+    output  wire[3:0]           ram_write_sel,
+    output  wire[`DATA_BUS]     ram_write_data,
+
     // to EX stage
+    output  wire                ram_read_flag,
     output  reg [`DATA_BUS]     operand_1,
     output  reg [`DATA_BUS]     operand_2,
     output  reg                 write_reg_en,
@@ -55,7 +62,18 @@ module  ID_I(
     wire                branch_write_reg_en;
     wire[`REG_ADDR_BUS] branch_write_reg_addr;
 
-    assign  inst_i  = inst_immediate || inst_branch;
+    // ID_SL
+    wire                inst_sl;
+    wire                sl_reg_read_en_1;
+    wire[`REG_ADDR_BUS] sl_reg_addr_1;
+    wire                sl_reg_read_en_2;
+    wire[`REG_ADDR_BUS] sl_reg_addr_2;
+    wire[`DATA_BUS]     sl_operand_1;
+    wire[`DATA_BUS]     sl_operand_2;
+    wire                sl_write_reg_en;
+    wire[`REG_ADDR_BUS] sl_write_reg_addr;
+
+    assign  inst_i  = inst_immediate || inst_branch || inst_sl;
 
     ID_IMM  id_imm0(
         .rst                (rst),
@@ -114,6 +132,40 @@ module  ID_I(
         .write_reg_addr     (branch_write_reg_addr)
     );
 
+    ID_SL   id_sl0(
+        .rst                (rst),
+        
+        // to ID_I
+        .inst_sl            (inst_sl),
+
+        // from IF stage
+        .pc                 (pc),
+        .inst               (inst),
+        
+        // from RegReadProxy
+        .reg_val_mux_data_1 (reg_val_mux_data_1),
+        .reg_val_mux_data_2 (reg_val_mux_data_2),
+        
+        // to RegFile
+        .reg_read_en_1      (sl_reg_read_en_1),
+        .reg_addr_1         (sl_reg_addr_1),
+        .reg_read_en_2      (sl_reg_read_en_2),
+        .reg_addr_2         (sl_reg_addr_2),
+
+        // to RAM
+        .ram_en             (ram_en),
+        .ram_write_en       (ram_write_en),
+        .ram_write_sel      (ram_write_sel),
+        .ram_write_data     (ram_write_data),
+
+        // to EX stage
+        .ram_read_flag      (ram_read_flag),
+        .operand_1          (sl_operand_1),
+        .operand_2          (sl_operand_2),
+        .write_reg_en       (sl_write_reg_en),
+        .write_reg_addr     (sl_write_reg_addr)
+    );
+
     always @ (*)    begin
         if (inst_immediate == `TRUE)    begin
             reg_read_en_1   <= imm_reg_read_en_1;
@@ -133,6 +185,15 @@ module  ID_I(
             operand_2       <= branch_operand_2;
             write_reg_en    <= branch_write_reg_en;
             write_reg_addr  <= branch_write_reg_addr;
+        end else if (inst_sl == `TRUE)  begin
+            reg_read_en_1   <= sl_reg_read_en_1;
+            reg_addr_1      <= sl_reg_addr_1;
+            reg_read_en_2   <= sl_reg_read_en_2;
+            reg_addr_2      <= sl_reg_addr_2;
+            operand_1       <= sl_operand_1;
+            operand_2       <= sl_operand_2;
+            write_reg_en    <= sl_write_reg_en;
+            write_reg_addr  <= sl_write_reg_addr;
         end else    begin
             reg_read_en_1   <= `READ_DISABLE;
             reg_addr_1      <= `ZERO_REG_ADDR;

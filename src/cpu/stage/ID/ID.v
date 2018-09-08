@@ -15,6 +15,8 @@ module  ID(
     // from RegReadProxy
     input   wire[`DATA_BUS]     reg_val_mux_data_1,
     input   wire[`DATA_BUS]     reg_val_mux_data_2,
+    input   wire                load_related_1,
+    input   wire                load_related_2,
 
     // stall request
     output  wire                id_stall_request,
@@ -29,7 +31,14 @@ module  ID(
     output  reg                 branch_flag,
     output  reg [`ADDR_BUS]     branch_addr,
 
+    // to RAM
+    output  wire                ram_en,
+    output  wire                ram_write_en,
+    output  wire[3:0]           ram_write_sel,
+    output  wire[`DATA_BUS]     ram_write_data,
+
     // to EX stage
+    output  wire                ram_read_flag,
     output  wire[`FUNCT_BUS]    funct,
     output  reg [`DATA_BUS]     operand_1,
     output  reg [`DATA_BUS]     operand_2,
@@ -38,7 +47,7 @@ module  ID(
     output  reg [`REG_ADDR_BUS] write_reg_addr
 );
 
-    assign  id_stall_request    = `NO_STOP;
+    assign  id_stall_request    = load_related_1 || load_related_2;
 
     wire                    inst_r;
     wire                    inst_i;
@@ -103,7 +112,14 @@ module  ID(
         .branch_flag        (i_branch_flag),
         .branch_addr        (i_branch_addr),
 
+        // to RAM
+        .ram_en             (ram_en),
+        .ram_write_en       (ram_write_en),
+        .ram_write_sel      (ram_write_sel),
+        .ram_write_data     (ram_write_data),
+
         // to EX stage
+        .ram_read_flag      (ram_read_flag),
         .operand_1          (i_operand_1),
         .operand_2          (i_operand_2),
         .write_reg_en       (i_write_reg_en),

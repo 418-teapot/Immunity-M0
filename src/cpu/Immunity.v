@@ -8,7 +8,14 @@ module  Immunity(
 
     input   wire[`INST_BUS] rom_inst,
     output  wire[`ADDR_BUS] rom_addr,
-    output  wire            rom_en
+    output  wire            rom_en,
+
+    output  wire            ram_en,
+    output  wire            ram_write_en,
+    output  wire[3:0]       ram_write_sel,
+    output  wire[`ADDR_BUS] ram_write_addr,
+    output  wire[`DATA_BUS] ram_write_data,
+    input   wire[`DATA_BUS] ram_read_data
 );
 
     wire[`ADDR_BUS]     pc_addr;
@@ -22,6 +29,12 @@ module  Immunity(
     wire                branch_flag;
     wire[`ADDR_BUS]     branch_addr;
 
+    wire                id_ram_en_o;
+    wire                id_ram_write_en_o;
+    wire[3:0]           id_ram_write_sel_o;
+    wire[`DATA_BUS]     id_ram_write_data_o;
+    wire                id_ram_read_flag_o;
+
     wire[`FUNCT_BUS]    id_funct_o;
     wire[`DATA_BUS]     id_operand_1_o;
     wire[`DATA_BUS]     id_operand_2_o;
@@ -30,12 +43,25 @@ module  Immunity(
     wire[`REG_ADDR_BUS] id_write_reg_addr_o;
 
     // EX stage
+    wire                ex_ram_en_i;
+    wire                ex_ram_write_en_i;
+    wire[3:0]           ex_ram_write_sel_i;
+    wire[`DATA_BUS]     ex_ram_write_data_i;
+
+    wire                ex_ram_read_flag_i;
     wire[`FUNCT_BUS]    ex_funct_i;
     wire[`DATA_BUS]     ex_operand_1_i;
     wire[`DATA_BUS]     ex_operand_2_i;
     wire[`SHAMT_BUS]    ex_shamt_i;
     wire                ex_write_reg_en_i;
     wire[`REG_ADDR_BUS] ex_write_reg_addr_i;
+
+    wire                ex_load_flag;
+
+    wire                ex_ram_en_o;
+    wire                ex_ram_write_en_o;
+    wire[3:0]           ex_ram_write_sel_o;
+    wire[`DATA_BUS]     ex_ram_write_data_o;
 
     wire[`DATA_BUS]     ex_result_o;
     wire                ex_write_reg_en_o;
@@ -45,6 +71,11 @@ module  Immunity(
     wire[`DATA_BUS]     ex_write_lo_data_o;
 
     // MEM stage
+    wire                mem_ram_en_i;
+    wire                mem_ram_write_en_i;
+    wire[3:0]           mem_ram_write_sel_i;
+    wire[`DATA_BUS]     mem_ram_write_data_i;
+
     wire[`DATA_BUS]     mem_result_i;
     wire                mem_write_reg_en_i;
     wire[`REG_ADDR_BUS] mem_write_reg_addr_i;
@@ -70,6 +101,8 @@ module  Immunity(
     // RegReadProxy
     wire[`DATA_BUS]     reg_val_mux_data_1;
     wire[`DATA_BUS]     reg_val_mux_data_2;
+    wire                load_related_1;
+    wire                load_related_2;
 
     // HILOReadProxy
     wire[`DATA_BUS]     hi_val_mux_data;
@@ -149,6 +182,8 @@ module  Immunity(
         // from RegReadProxy
         .reg_val_mux_data_1 (reg_val_mux_data_1),
         .reg_val_mux_data_2 (reg_val_mux_data_2),
+        .load_related_1     (load_related_1),
+        .load_related_2     (load_related_2),
 
         // stall request
         .id_stall_request   (id_stall_request),
@@ -163,7 +198,14 @@ module  Immunity(
         .branch_flag        (branch_flag),
         .branch_addr        (branch_addr),
 
+        // to RAM
+        .ram_en             (id_ram_en_o),
+        .ram_write_en       (id_ram_write_en_o),
+        .ram_write_sel      (id_ram_write_sel_o),
+        .ram_write_data     (id_ram_write_data_o),
+
         // to EX stage
+        .ram_read_flag      (id_ram_read_flag_o),
         .funct              (id_funct_o),
         .operand_1          (id_operand_1_o),
         .operand_2          (id_operand_2_o),
@@ -181,6 +223,12 @@ module  Immunity(
         .stall_next_stage   (stall_ex),
 
         // from ID stage
+        .ram_en_in          (id_ram_en_o),
+        .ram_write_en_in    (id_ram_write_en_o),
+        .ram_write_sel_in   (id_ram_write_sel_o),
+        .ram_write_data_in  (id_ram_write_data_o),
+        
+        .ram_read_flag_in   (id_ram_read_flag_o),
         .funct_in           (id_funct_o),
         .operand_1_in       (id_operand_1_o),
         .operand_2_in       (id_operand_2_o),
@@ -189,6 +237,12 @@ module  Immunity(
         .write_reg_addr_in  (id_write_reg_addr_o),
 
         // to EX stage
+        .ram_en_out         (ex_ram_en_i),
+        .ram_write_en_out   (ex_ram_write_en_i),
+        .ram_write_sel_out  (ex_ram_write_sel_i),
+        .ram_write_data_out (ex_ram_write_data_i),
+
+        .ram_read_flag_out  (ex_ram_read_flag_i),
         .funct_out          (ex_funct_i),
         .operand_1_out      (ex_operand_1_i),
         .operand_2_out      (ex_operand_2_i),
@@ -202,6 +256,12 @@ module  Immunity(
         .rst                (rst),
 
         // from ID stage
+        .ram_en_in          (ex_ram_en_i),
+        .ram_write_en_in    (ex_ram_write_en_i),
+        .ram_write_sel_in   (ex_ram_write_sel_i),
+        .ram_write_data_in  (ex_ram_write_data_i),
+
+        .ram_read_flag      (ex_ram_read_flag_i),
         .funct              (ex_funct_i),
         .operand_1          (ex_operand_1_i),
         .operand_2          (ex_operand_2_i),
@@ -213,10 +273,18 @@ module  Immunity(
         .hi_val_mux_data    (hi_val_mux_data),
         .lo_val_mux_data    (lo_val_mux_data),
 
+        // to RegReadProxy
+        .ex_load_flag       (ex_load_flag),
+
         // stall request
         .ex_stall_request   (ex_stall_request),
 
         // to MEM stage
+        .ram_en_out         (ex_ram_en_o),
+        .ram_write_en_out   (ex_ram_write_en_o),
+        .ram_write_sel_out  (ex_ram_write_sel_o),
+        .ram_write_data_out (ex_ram_write_data_o),
+
         .result_out         (ex_result_o),
         .write_reg_en_out   (ex_write_reg_en_o),
         .write_reg_addr_out (ex_write_reg_addr_o),
@@ -234,6 +302,11 @@ module  Immunity(
         .stall_next_stage   (stall_mem),
 
         // from EX stage
+        .ram_en_in          (ex_ram_en_o),
+        .ram_write_en_in    (ex_ram_write_en_o),
+        .ram_write_sel_in   (ex_ram_write_sel_o),
+        .ram_write_data_in  (ex_ram_write_data_o),
+
         .result_in          (ex_result_o),
         .write_reg_en_in    (ex_write_reg_en_o),
         .write_reg_addr_in  (ex_write_reg_addr_o),
@@ -242,6 +315,11 @@ module  Immunity(
         .write_lo_data_in   (ex_write_lo_data_o),
 
         // to MEM stage
+        .ram_en_out         (mem_ram_en_i),
+        .ram_write_en_out   (mem_ram_write_en_i),
+        .ram_write_sel_out  (mem_ram_write_sel_i),
+        .ram_write_data_out (mem_ram_write_data_i),
+
         .result_out         (mem_result_i),
         .write_reg_en_out   (mem_write_reg_en_i),
         .write_reg_addr_out (mem_write_reg_addr_i),
@@ -253,13 +331,28 @@ module  Immunity(
     MEM mem0(
         .rst                (rst),
 
+        // from RAM
+        .ram_read_data      (ram_read_data),
+
         // from EX stage
+        .ram_en_in          (mem_ram_en_i),
+        .ram_write_en_in    (mem_ram_write_en_i),
+        .ram_write_sel_in   (mem_ram_write_sel_i),
+        .ram_write_data_in  (mem_ram_write_data_i),
+
         .result_in          (mem_result_i),
         .write_reg_en_in    (mem_write_reg_en_i),
         .write_reg_addr_in  (mem_write_reg_addr_i),
         .write_hilo_en_in   (mem_write_hilo_en_i),
         .write_hi_data_in   (mem_write_hi_data_i),
         .write_lo_data_in   (mem_write_lo_data_i),
+
+        // to RAM
+        .ram_en_out         (ram_en),
+        .ram_write_en_out   (ram_write_en),
+        .ram_write_sel_out  (ram_write_sel),
+        .ram_write_addr_out (ram_write_addr),
+        .ram_write_data_out (ram_write_data),
 
         // to WB stage
         .result_out         (mem_result_o),
@@ -332,11 +425,16 @@ module  Immunity(
         .ex_write_reg_en    (ex_write_reg_en_o),
         .ex_write_reg_addr  (ex_write_reg_addr_o),
         .ex_data            (ex_result_o),
+        .ex_load_flag       (ex_load_flag),
 
         // input from MEM stage
         .mem_write_reg_en   (mem_write_reg_en_o),
         .mem_write_reg_addr (mem_write_reg_addr_o),
         .mem_data           (mem_result_o),
+
+        // load related signals
+        .load_related_1     (load_related_1),
+        .load_related_2     (load_related_2),
 
         // data output
         .reg_val_mux_data_1 (reg_val_mux_data_1),
