@@ -79,3 +79,8 @@
 // inst_rom
 `define INST_MEM_NUM            512
 `define INST_MEM_NUM_LOG2       9
+
+// data_ram
+`define DATA_MEM_NUM            131071
+`define DATA_MEM_NUM_LOG2       17
+`define DATA_MEM_BUS            0:16

@@ -8,6 +8,12 @@ module  EX(
     input   wire                rst,
 
     // from ID stage
+    input   wire                ram_en_in,
+    input   wire                ram_write_en_in,
+    input   wire[3:0]           ram_write_sel_in,
+    input   wire[`DATA_BUS]     ram_write_data_in,
+
+    input   wire                ram_read_flag,
     input   wire[`FUNCT_BUS]    funct,
     input   wire[`DATA_BUS]     operand_1,
     input   wire[`DATA_BUS]     operand_2,
@@ -19,10 +25,18 @@ module  EX(
     input   wire[`DATA_BUS]     hi_val_mux_data,
     input   wire[`DATA_BUS]     lo_val_mux_data,
 
+    // to RegReadProxy
+    output  wire                ex_load_flag,
+
     // stall request
     output  wire                ex_stall_request,
 
     // to MEM stage
+    output  wire                ram_en_out,
+    output  wire                ram_write_en_out,
+    output  wire[3:0]           ram_write_sel_out,
+    output  wire[`DATA_BUS]     ram_write_data_out,
+
     output  wire[`DATA_BUS]     result_out,
     output  wire                write_reg_en_out,
     output  wire[`REG_ADDR_BUS] write_reg_addr_out,
@@ -37,6 +51,13 @@ module  EX(
     assign  write_reg_en_out    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : write_reg_en;
     assign  write_reg_addr_out  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : write_reg_addr_in;
     assign  result_out          = (rst == `RST_ENABLE) ? `ZERO_WORD     : result;
+
+    assign  ram_en_out          = (rst == `RST_ENABLE) ? `CHIP_DISABLE  : ram_en_in;
+    assign  ram_write_en_out    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : ram_write_en_in;
+    assign  ram_write_sel_out   = (rst == `RST_ENABLE) ? 4'b0000        : ram_write_sel_in;
+    assign  ram_write_data_out  = (rst == `RST_ENABLE) ? `ZERO_WORD     : ram_write_data_in;
+
+    assign  ex_load_flag        = (rst == `RST_ENABLE) ? `FALSE         : ram_read_flag;
 
     // sum of operand_1 & operand_2
     wire[`DATA_BUS] result_sum;
