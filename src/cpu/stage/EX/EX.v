@@ -123,6 +123,9 @@ module  EX(
             // bit count
             `FUNCT2_CLZ, `FUNCT2_CLO:
                             result  <= result_count;
+            // jump
+            `FUNCT_JR, `FUNCT_JALR:
+                            result  <= operand_1;
             default:        result  <= `ZERO_WORD;
         endcase
     end

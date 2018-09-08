@@ -19,6 +19,9 @@ module  Immunity(
     wire[`ADDR_BUS]     id_addr_i;
     wire[`INST_BUS]     id_inst_i;
 
+    wire                branch_flag;
+    wire[`ADDR_BUS]     branch_addr;
+
     wire[`FUNCT_BUS]    id_funct_o;
     wire[`DATA_BUS]     id_operand_1_o;
     wire[`DATA_BUS]     id_operand_2_o;
@@ -109,6 +112,11 @@ module  Immunity(
         // stall signal
         .stall_pc           (stall_pc),
 
+        // from ID stage
+        // branch control
+        .branch_flag        (branch_flag),
+        .branch_addr        (branch_addr),
+
         // to ROM
         .rom_en             (rom_en),            
         .addr               (pc_addr)
@@ -150,6 +158,10 @@ module  Immunity(
         .reg_addr_1         (read_addr_1), 
         .reg_read_en_2      (read_en_2),
         .reg_addr_2         (read_addr_2),
+
+        // to pc
+        .branch_flag        (branch_flag),
+        .branch_addr        (branch_addr),
 
         // to EX stage
         .funct              (id_funct_o),

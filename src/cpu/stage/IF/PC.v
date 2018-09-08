@@ -9,7 +9,12 @@ module  PC(
     // stall signal
     input   wire            stall_pc,
 
-    // to ROM
+    // from ID stage 
+    // branch control
+    input   wire            branch_flag,
+    input   wire[`ADDR_BUS] branch_addr,
+
+    // to ROM (addr is pc)
     output  reg             rom_en,
     output  reg [`ADDR_BUS] addr
 );
@@ -26,7 +31,11 @@ module  PC(
         if (rom_en == `CHIP_DISABLE)    begin
             addr    <= `ZERO_WORD;
         end else if (stall_pc == `NO_STOP)  begin
-            addr    <= addr + 4'h4;
+            if (branch_flag == `TRUE)   begin
+                addr    <= branch_addr;
+            end else    begin
+                addr    <= addr + 4'h4;
+            end
         end
     end
 
