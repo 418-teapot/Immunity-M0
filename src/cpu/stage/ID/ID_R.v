@@ -12,18 +12,22 @@ module  ID_R(
     output  reg                 inst_r,
     
     // from IF stage
-    input   wire[`ADDR_BUS]     addr,
+    input   wire[`ADDR_BUS]     pc,
     input   wire[`INST_BUS]     inst,
 
     // from RegReadProxy
     input   wire[`DATA_BUS]     reg_val_mux_data_1,
     input   wire[`DATA_BUS]     reg_val_mux_data_2,
 
-    // from or to RegFile
+    // to RegFile
     output  reg                 reg_read_en_1,
     output  reg [`REG_ADDR_BUS] reg_addr_1,
     output  reg                 reg_read_en_2,
     output  reg [`REG_ADDR_BUS] reg_addr_2,
+
+    // to pc
+    output  reg                 branch_flag,
+    output  reg [`ADDR_BUS]     branch_addr,
 
     // to EX stage
     output  wire[`DATA_BUS]     operand_1,
@@ -38,12 +42,13 @@ module  ID_R(
     wire[`REG_ADDR_BUS] inst_rt     = inst[`SEG_RT];
     wire[`REG_ADDR_BUS] inst_rd     = inst[`SEG_RD];
     wire[`FUNCT_BUS]    inst_funct  = inst[`SEG_FUNCT];
-    wire[`IMM_BUS]      inst_imm    = inst[`SEG_IMM];
     wire[`SHAMT_BUS]    inst_shamt  = inst[`SEG_SHAMT];
 
-    wire[`DATA_BUS]     zero_extended_imm = {16'b0, inst_imm};
+    reg [`ADDR_BUS] link_addr;
+    wire[`ADDR_BUS] pc_plus_8   = pc + 8;
 
-    assign  operand_1   = (rst == `RST_ENABLE) ? `ZERO_WORD : reg_val_mux_data_1;
+    assign  operand_1   = (rst == `RST_ENABLE) ? `ZERO_WORD : 
+                          (inst_funct == `FUNCT_JR || inst_funct == `FUNCT_JALR) ? link_addr : reg_val_mux_data_1;
     assign  operand_2   = (rst == `RST_ENABLE) ? `ZERO_WORD : reg_val_mux_data_2;
 
     assign  shamt       = (rst == `RST_ENABLE) ? `SHAMT_BUS_WIDTH'b0 : inst_shamt;
@@ -99,7 +104,17 @@ module  ID_R(
         end else    begin
             case (inst_op)
 
-                `OP_SPECIAL, `OP_SPECIAL2:    begin
+                `OP_SPECIAL:    begin
+                    if (inst_funct == `FUNCT_JR)    begin
+                        write_reg_en    <= `WRITE_DISABLE;
+                        write_reg_addr  <= `ZERO_REG_ADDR;
+                    end else    begin
+                        write_reg_en    <= `WRITE_ENABLE;
+                        write_reg_addr  <= inst_rd;
+                    end
+                end
+
+                `OP_SPECIAL2:    begin
                     write_reg_en    <= `WRITE_ENABLE;
                     write_reg_addr  <= inst_rd;
                 end
@@ -109,6 +124,33 @@ module  ID_R(
                     write_reg_addr  <= `ZERO_REG_ADDR;
                 end
 
+            endcase
+        end
+    end
+
+    // generate branch information
+    always @ (*)    begin
+        if (rst == `RST_ENABLE) begin
+            link_addr   <= `ZERO_WORD;
+            branch_flag <= `FALSE;
+            branch_addr <= `ZERO_WORD;
+        end else    begin
+            case (inst_funct)
+                `FUNCT_JR:  begin
+                    link_addr   <= `ZERO_WORD;
+                    branch_flag <= `TRUE;
+                    branch_addr <= reg_val_mux_data_1;
+                end 
+                `FUNCT_JALR:    begin
+                    link_addr   <= pc_plus_8;
+                    branch_flag <= `TRUE;
+                    branch_addr <= reg_val_mux_data_1;
+                end
+                default:    begin
+                    link_addr   <= `ZERO_WORD;
+                    branch_flag <= `FALSE;
+                    branch_addr <= `ZERO_WORD;
+                end
             endcase
         end
     end

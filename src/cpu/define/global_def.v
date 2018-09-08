@@ -52,12 +52,16 @@
 `define INST_OP_TYPE_BUS_WIDTH  3
 `define INST_OP_BUS             5:0
 `define INST_OP_BUS_WIDTH       6
+`define INST_ADDR_BUS           25:0
+`define INST_ADDR_BUS_WIDTH     26
 `define FUNCT_BUS               5:0
 `define FUNCT_BUS_WIDTH         6
 `define SHAMT_BUS               4:0
 `define SHAMT_BUS_WIDTH         5
 `define IMM_BUS                 15:0
 `define IMM_BUS_WIDTH           16
+`define OFFSET_BUS              15:0
+`define OFFSET_BUS_WIDTH        16
 
 // instruction type
 `define TYPE_R                  3'b100

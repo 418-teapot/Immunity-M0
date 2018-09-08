@@ -18,6 +18,9 @@
 `define SEG_IMM      15:0
 `define SEG_OFFSET   15:0
 
+// address
+`define SEG_ADDR     25:0
+
 // shamt
 `define SEG_SHAMT    10:6
 
