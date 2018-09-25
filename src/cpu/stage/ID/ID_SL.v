@@ -46,11 +46,11 @@ module  ID_SL(
 
     wire[`DATA_BUS]     sign_extended_offset  = {{16{inst[15]}}, inst_offset};
 
-    assign  operand_1 = (rst == ` RST_ENABLE) ? `ZERO_WORD : 
+    assign  operand_1 = (rst == `RST_ENABLE) ? `ZERO_WORD : 
                         (reg_read_en_1 == `READ_ENABLE) ? reg_val_mux_data_1:
                         `ZERO_WORD;
     
-    assign  operand_2 = (rst == ` RST_ENABLE) ? `ZERO_WORD : sign_extended_offset;
+    assign  operand_2 = (rst == `RST_ENABLE) ? `ZERO_WORD : sign_extended_offset;
 
     // generate inst_sl
     always @ (*)    begin
