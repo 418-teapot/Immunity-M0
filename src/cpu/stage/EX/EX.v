@@ -124,15 +124,15 @@ module  EX(
             `FUNCT_SLL:     result  <= operand_2 << shamt;
             `FUNCT_SRL:     result  <= operand_2 >> shamt;
             `FUNCT_SRA:     result  <= ({32{operand_2[31]}} << (6'd32 - {1'b0, shamt})) | operand_2 >> shamt;
-            `FUNCT_SLLV:    result <= operand_2 << operand_1[4:0];
-            `FUNCT_SRLV:    result <= operand_2 >> operand_1[4:0];
-            `FUNCT_SRAV:    result <= ({32{operand_2[31]}} << (6'd32 - {1'b0, operand_1[4:0]})) | operand_2 >> operand_1[4:0];
+            `FUNCT_SLLV:    result  <= operand_2 << operand_1[4:0];
+            `FUNCT_SRLV:    result  <= operand_2 >> operand_1[4:0];
+            `FUNCT_SRAV:    result  <= ({32{operand_2[31]}} << (6'd32 - {1'b0, operand_1[4:0]})) | operand_2 >> operand_1[4:0];
             // move
             `FUNCT_MOVN, `FUNCT_MOVZ:   
                             result  <= operand_1;
             // HI & LO
-            `FUNCT_MFHI:    result <= hi_val_mux_data;
-            `FUNCT_MFLO:    result <= lo_val_mux_data;
+            `FUNCT_MFHI:    result  <= hi_val_mux_data;
+            `FUNCT_MFLO:    result  <= lo_val_mux_data;
             // arithmetic
             `FUNCT_ADD, `FUNCT_ADDU, `FUNCT_SUB, `FUNCT_SUBU:
                             result  <= result_sum;
