@@ -9,7 +9,7 @@ module  ID_SL(
     input   wire                rst,
 
     // to ID_I
-    output  reg                 inst_sl,
+    output  wire                inst_sl,
 
     // from IF stage
     input   wire[`ADDR_BUS]     pc,
@@ -35,8 +35,8 @@ module  ID_SL(
     output  wire                ram_read_flag,
     output  wire[`DATA_BUS]     operand_1,
     output  wire[`DATA_BUS]     operand_2,
-    output  reg                 write_reg_en,
-    output  reg [`REG_ADDR_BUS] write_reg_addr
+    output  wire                write_reg_en,
+    output  wire[`REG_ADDR_BUS] write_reg_addr
 );
 
     wire[`INST_OP_BUS]  inst_op     = inst[`SEG_OPCODE];
@@ -52,15 +52,19 @@ module  ID_SL(
     
     assign  operand_2 = (rst == `RST_ENABLE) ? `ZERO_WORD : sign_extended_offset;
 
+    // generate ram_read_flag
+    assign  ram_read_flag = ((inst_op == `OP_LB) || (inst_op == `OP_LBU) ||
+                             (inst_op == `OP_LH) || (inst_op == `OP_LHU) ||
+                             (inst_op == `OP_LW) || (inst_op == `OP_LWL) ||
+                             (inst_op == `OP_LWR)) ? `TRUE  : `FALSE; 
+
+    // generate ram_write_flag
+    wire    ram_write_flag = ((inst_op == `OP_SB) || (inst_op == `OP_SH)  ||
+                              (inst_op == `OP_SW) || (inst_op == `OP_SWL) ||
+                              (inst_op == `OP_SWR)) ? `TRUE : `FALSE;
+
     // generate inst_sl
-    always @ (*)    begin
-        case (inst_op)
-            `OP_LW, `OP_SW: 
-                inst_sl <= `TRUE;
-            default:
-                inst_sl <= `FALSE;
-        endcase
-    end
+    assign  inst_sl = ram_read_flag || ram_write_flag;                      
 
     // generate read information
     always @ (*)    begin
@@ -98,34 +102,8 @@ module  ID_SL(
     end
 
     // generate write information
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            write_reg_en    <= `WRITE_DISABLE;
-            write_reg_addr  <= `ZERO_REG_ADDR;
-        end else    begin
-            case (inst_op)  
-
-                `OP_LW: begin
-                    write_reg_en    <= `WRITE_ENABLE;
-                    write_reg_addr  <= inst_rt;
-                end
-
-                `OP_SW: begin
-                    write_reg_en    <= `WRITE_DISABLE;
-                    write_reg_addr  <= `ZERO_REG_ADDR;
-                end
-
-                default:    begin
-                    write_reg_en    <= `WRITE_DISABLE;
-                    write_reg_addr  <= `ZERO_REG_ADDR;
-                end
-
-            endcase
-        end
-    end
-    // generate ram_read_flag
-    assign  ram_read_flag   = (rst == `RST_ENABLE) ? `FALSE :
-                              (inst_op == `OP_LW) ? `TRUE : `FALSE;
+    assign  write_reg_en    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : (ram_read_flag == `TRUE) ? `WRITE_ENABLE  : `WRITE_DISABLE;
+    assign  write_reg_addr  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : (ram_read_flag == `TRUE) ? inst_rt        : `ZERO_REG_ADDR;    
 
     // generate RAM information
     assign  ram_en  = (rst == `RST_ENABLE) ? `CHIP_DISABLE :
