@@ -166,44 +166,56 @@ module  ID_I(
         .write_reg_addr     (sl_write_reg_addr)
     );
 
+    wire[2:0]   inst_type   = {inst_immediate, inst_branch, inst_sl};
+
     always @ (*)    begin
-        if (inst_immediate == `TRUE)    begin
-            reg_read_en_1   <= imm_reg_read_en_1;
-            reg_addr_1      <= imm_reg_addr_1;
-            reg_read_en_2   <= imm_reg_read_en_2;
-            reg_addr_2      <= imm_reg_addr_2;
-            operand_1       <= imm_operand_1;
-            operand_2       <= imm_operand_2;
-            write_reg_en    <= imm_write_reg_en;
-            write_reg_addr  <= imm_write_reg_addr;
-        end else if (inst_branch == `TRUE)  begin
-            reg_read_en_1   <= branch_reg_read_en_1;
-            reg_addr_1      <= branch_reg_addr_1;
-            reg_read_en_2   <= branch_reg_read_en_2;
-            reg_addr_2      <= branch_reg_addr_2;
-            operand_1       <= branch_operand_1;
-            operand_2       <= branch_operand_2;
-            write_reg_en    <= branch_write_reg_en;
-            write_reg_addr  <= branch_write_reg_addr;
-        end else if (inst_sl == `TRUE)  begin
-            reg_read_en_1   <= sl_reg_read_en_1;
-            reg_addr_1      <= sl_reg_addr_1;
-            reg_read_en_2   <= sl_reg_read_en_2;
-            reg_addr_2      <= sl_reg_addr_2;
-            operand_1       <= sl_operand_1;
-            operand_2       <= sl_operand_2;
-            write_reg_en    <= sl_write_reg_en;
-            write_reg_addr  <= sl_write_reg_addr;
-        end else    begin
-            reg_read_en_1   <= `READ_DISABLE;
-            reg_addr_1      <= `ZERO_REG_ADDR;
-            reg_read_en_2   <= `READ_DISABLE;
-            reg_addr_2      <= `ZERO_REG_ADDR;
-            operand_1       <= `ZERO_WORD;
-            operand_2       <= `ZERO_WORD;
-            write_reg_en    <= `WRITE_DISABLE;
-            write_reg_addr  <= `ZERO_REG_ADDR;
-        end
+        case (inst_type)
+
+            `TYPE_IMM:  begin
+                reg_read_en_1   <= imm_reg_read_en_1;
+                reg_addr_1      <= imm_reg_addr_1;
+                reg_read_en_2   <= imm_reg_read_en_2;
+                reg_addr_2      <= imm_reg_addr_2;
+                operand_1       <= imm_operand_1;
+                operand_2       <= imm_operand_2;
+                write_reg_en    <= imm_write_reg_en;
+                write_reg_addr  <= imm_write_reg_addr;
+            end
+
+            `TYPE_B:    begin
+                reg_read_en_1   <= branch_reg_read_en_1;
+                reg_addr_1      <= branch_reg_addr_1;
+                reg_read_en_2   <= branch_reg_read_en_2;
+                reg_addr_2      <= branch_reg_addr_2;
+                operand_1       <= branch_operand_1;
+                operand_2       <= branch_operand_2;
+                write_reg_en    <= branch_write_reg_en;
+                write_reg_addr  <= branch_write_reg_addr;
+            end
+
+            `TYPE_SL:   begin
+                reg_read_en_1   <= sl_reg_read_en_1;
+                reg_addr_1      <= sl_reg_addr_1;
+                reg_read_en_2   <= sl_reg_read_en_2;
+                reg_addr_2      <= sl_reg_addr_2;
+                operand_1       <= sl_operand_1;
+                operand_2       <= sl_operand_2;
+                write_reg_en    <= sl_write_reg_en;
+                write_reg_addr  <= sl_write_reg_addr;
+            end
+
+            default:    begin
+                reg_read_en_1   <= `READ_DISABLE;
+                reg_addr_1      <= `ZERO_REG_ADDR;
+                reg_read_en_2   <= `READ_DISABLE;
+                reg_addr_2      <= `ZERO_REG_ADDR;
+                operand_1       <= `ZERO_WORD;
+                operand_2       <= `ZERO_WORD;
+                write_reg_en    <= `WRITE_DISABLE;
+                write_reg_addr  <= `ZERO_REG_ADDR;
+            end
+
+        endcase
     end
 
 endmodule
