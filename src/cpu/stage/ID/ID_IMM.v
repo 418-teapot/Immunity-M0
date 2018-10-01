@@ -19,16 +19,16 @@ module  ID_IMM(
     input   wire[`DATA_BUS]     reg_val_mux_data_2,
 
     // to RegFile
-    output  reg                 reg_read_en_1,
-    output  reg [`REG_ADDR_BUS] reg_addr_1,
-    output  reg                 reg_read_en_2,
-    output  reg [`REG_ADDR_BUS] reg_addr_2,
+    output  wire                reg_read_en_1,
+    output  wire[`REG_ADDR_BUS] reg_addr_1,
+    output  wire                reg_read_en_2,
+    output  wire[`REG_ADDR_BUS] reg_addr_2,
 
     // to EX stage
     output  wire[`DATA_BUS]     operand_1,
     output  reg [`DATA_BUS]     operand_2,
-    output  reg                 write_reg_en,
-    output  reg [`REG_ADDR_BUS] write_reg_addr
+    output  wire                write_reg_en,
+    output  wire[`REG_ADDR_BUS] write_reg_addr
 );
 
     wire[`INST_OP_BUS]  inst_op     = inst[`SEG_OPCODE];
@@ -61,33 +61,12 @@ module  ID_IMM(
     end
 
     // generate read information
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            reg_read_en_1   <= `READ_DISABLE;
-            reg_addr_1      <= `ZERO_REG_ADDR;
-            reg_read_en_2   <= `READ_DISABLE;
-            reg_addr_2      <= `ZERO_REG_ADDR;
-        end else    begin
-            case (inst_op)
-
-                `OP_ANDI,`OP_ORI,`OP_XORI,
-                `OP_ADDI, `OP_ADDIU, `OP_SLTI, `OP_SLTIU:   begin
-                    reg_read_en_1   <= `READ_ENABLE;
-                    reg_addr_1      <= inst_rs;
-                    reg_read_en_2   <= `READ_DISABLE;
-                    reg_addr_2      <= `ZERO_REG_ADDR;
-                end
-
-                default:        begin // OP_LUI
-                    reg_read_en_1   <= `READ_DISABLE;
-                    reg_addr_1      <= `ZERO_REG_ADDR;
-                    reg_read_en_2   <= `READ_DISABLE;
-                    reg_addr_2      <= `ZERO_REG_ADDR;
-                end
-
-            endcase
-        end
-    end
+    assign  reg_read_en_1   = (rst == `RST_ENABLE) ? `READ_DISABLE :
+                              (inst_immediate == `TRUE) ? `READ_ENABLE : `READ_DISABLE;
+    assign  reg_addr_1      = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR :
+                              (inst_immediate == `TRUE) ? inst_rs : `ZERO_REG_ADDR;
+    assign  reg_read_en_2   = `READ_DISABLE;
+    assign  reg_addr_2      = `ZERO_REG_ADDR;
 
     // generate operand_2
     always @ (*)    begin
@@ -106,27 +85,9 @@ module  ID_IMM(
     end
 
     // generate write information
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            write_reg_en    <= `WRITE_DISABLE;
-            write_reg_addr  <= `ZERO_REG_ADDR;
-        end else    begin
-            case (inst_op)
-
-                `OP_ANDI,`OP_ORI,`OP_XORI,
-                `OP_ADDI, `OP_ADDIU, `OP_SLTI, `OP_SLTIU,
-                `OP_LUI:        begin
-                    write_reg_en    <= `WRITE_ENABLE;
-                    write_reg_addr  <= inst_rt;
-                end
-
-                default:        begin
-                    write_reg_en    <= `WRITE_DISABLE;
-                    write_reg_addr  <= `ZERO_REG_ADDR;
-                end
-
-            endcase
-        end
-    end
+    assign  write_reg_en    = (rst == `RST_ENABLE) ? `WRITE_DISABLE :
+                              (inst_immediate == `TRUE) ? `WRITE_ENABLE : `WRITE_DISABLE;
+    assign  write_reg_addr  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR :
+                              (inst_immediate == `TRUE) ? inst_rt : `ZERO_REG_ADDR;
 
 endmodule
