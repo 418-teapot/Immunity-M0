@@ -9,7 +9,7 @@ module  ID_R(
     input   wire                rst,
 
     // to ID
-    output  reg                 inst_r,
+    output  wire                inst_r,
     
     // from IF stage
     input   wire[`ADDR_BUS]     pc,
@@ -20,10 +20,10 @@ module  ID_R(
     input   wire[`DATA_BUS]     reg_val_mux_data_2,
 
     // to RegFile
-    output  reg                 reg_read_en_1,
-    output  reg [`REG_ADDR_BUS] reg_addr_1,
-    output  reg                 reg_read_en_2,
-    output  reg [`REG_ADDR_BUS] reg_addr_2,
+    output  wire                reg_read_en_1,
+    output  wire[`REG_ADDR_BUS] reg_addr_1,
+    output  wire                reg_read_en_2,
+    output  wire[`REG_ADDR_BUS] reg_addr_2,
 
     // to pc
     output  reg                 branch_flag,
@@ -54,47 +54,17 @@ module  ID_R(
     assign  shamt       = (rst == `RST_ENABLE) ? `SHAMT_BUS_WIDTH'b0 : inst_shamt;
 
     // generate inst_r
-    always @ (*)    begin
-        case (inst_op)
-
-            `OP_SPECIAL, `OP_SPECIAL2:    begin
-                inst_r  <= `TRUE;
-            end
-
-            default:        begin
-                inst_r  <= `FALSE;
-            end
-
-        endcase
-    end
+    assign  inst_r  = (inst_op == `OP_SPECIAL || inst_op == `OP_SPECIAL2) ? `TRUE : `FALSE;
 
     // generate read information
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            reg_read_en_1   <= `READ_DISABLE;
-            reg_addr_1      <= `ZERO_REG_ADDR;
-            reg_read_en_2   <= `READ_DISABLE;
-            reg_addr_2      <= `ZERO_REG_ADDR;
-        end else    begin
-            case (inst_op)
-
-                `OP_SPECIAL, `OP_SPECIAL2:    begin
-                    reg_read_en_1   <= `READ_ENABLE;
-                    reg_addr_1      <= inst_rs;
-                    reg_read_en_2   <= `READ_ENABLE;
-                    reg_addr_2      <= inst_rt;
-                end
-
-                default:        begin
-                    reg_read_en_1   <= `READ_DISABLE;
-                    reg_addr_1      <= `ZERO_REG_ADDR;
-                    reg_read_en_2   <= `READ_DISABLE;
-                    reg_addr_2      <= `ZERO_REG_ADDR;
-                end
-
-            endcase
-        end
-    end
+    assign  reg_read_en_1   = (rst == `RST_ENABLE) ? `READ_DISABLE :
+                              (inst_r == `TRUE) ? `READ_ENABLE : `READ_DISABLE;
+    assign  reg_addr_1      = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR:
+                              (inst_r == `TRUE) ? inst_rs : `ZERO_REG_ADDR;
+    assign  reg_read_en_2   = (rst == `RST_ENABLE) ? `READ_DISABLE :
+                              (inst_r == `TRUE) ? `READ_ENABLE : `READ_DISABLE;
+    assign  reg_addr_2      = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR :
+                              (inst_r == `TRUE) ? inst_rt : `ZERO_REG_ADDR;
 
     // generate write information
     always @ (*)    begin
