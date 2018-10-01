@@ -68,6 +68,10 @@
 `define TYPE_I                  3'b010
 `define TYPE_J                  3'b001
 
+`define TYPE_IMM                3'b100
+`define TYPE_B                  3'b010
+`define TYPE_SL                 3'b001
+
 // stall signal bus
 `define STALL_BUS               5:0
 `define STALL_BUS_WIDTH         6
