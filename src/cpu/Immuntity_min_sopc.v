@@ -13,7 +13,7 @@ module  Immunity_min_sopc(
     wire            ram_en;
     wire            ram_write_en;
     wire[3:0]       ram_write_sel;
-    wire[`ADDR_BUS] ram_write_addr;
+    wire[`ADDR_BUS] ram_addr;
     wire[`DATA_BUS] ram_write_data;
     wire[`DATA_BUS] ram_read_data;
 
@@ -28,7 +28,7 @@ module  Immunity_min_sopc(
         .ram_en         (ram_en),
         .ram_write_en   (ram_write_en),
         .ram_write_sel  (ram_write_sel),
-        .ram_write_addr (ram_write_addr),
+        .ram_addr       (ram_addr),
         .ram_write_data (ram_write_data),
         .ram_read_data  (ram_read_data)
     );
@@ -45,7 +45,7 @@ module  Immunity_min_sopc(
         .ram_en     (ram_en),
         .write_en   (ram_write_en),
         .write_sel  (ram_write_sel),
-        .write_addr (ram_write_addr),
+        .addr       (ram_addr),
         .write_data (ram_write_data),
         .read_data  (ram_read_data)
     );
