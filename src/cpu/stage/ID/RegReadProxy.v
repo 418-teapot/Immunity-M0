@@ -36,7 +36,9 @@ module  RegReadProxy(
     // generate reg_val_mux_data_1
     always @ (*)    begin
         if (reg_read_en_1 == `READ_ENABLE)  begin
-            if ((ex_write_reg_en == `WRITE_ENABLE) && (reg_addr_1 == ex_write_reg_addr))    begin
+            if (reg_addr_1 == `ZERO_REG_ADDR)   begin
+                reg_val_mux_data_1  <= `ZERO_WORD;
+            end else if ((ex_write_reg_en == `WRITE_ENABLE) && (reg_addr_1 == ex_write_reg_addr))   begin
                 reg_val_mux_data_1  <= ex_data;
             end else if ((mem_write_reg_en == `WRITE_ENABLE) && (reg_addr_1 == mem_write_reg_addr)) begin
                 reg_val_mux_data_1  <= mem_data;
@@ -51,7 +53,9 @@ module  RegReadProxy(
     // generate reg_val_mux_data_2
     always @ (*)    begin
         if (reg_read_en_2 == `READ_ENABLE)  begin
-            if ((ex_write_reg_en == `WRITE_ENABLE) && (reg_addr_2 == ex_write_reg_addr))    begin
+            if (reg_addr_2 == `ZERO_REG_ADDR)   begin
+                reg_val_mux_data_2  <= `ZERO_WORD;
+            end else if ((ex_write_reg_en == `WRITE_ENABLE) && (reg_addr_2 == ex_write_reg_addr))   begin
                 reg_val_mux_data_2  <= ex_data;
             end else if ((mem_write_reg_en == `WRITE_ENABLE) && (reg_addr_2 == mem_write_reg_addr)) begin
                 reg_val_mux_data_2  <= mem_data;
