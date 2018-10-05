@@ -13,10 +13,10 @@ module  ID_EX(
     // from ID stage
     input   wire                ram_en_in,
     input   wire                ram_write_en_in,
-    input   wire[3:0]           ram_write_sel_in,
-    input   wire[`DATA_BUS]     ram_write_data_in,
     
     input   wire                ram_read_flag_in,
+    input   wire[`INST_OP_BUS]  inst_op_in,
+    input   wire[`DATA_BUS]     reg_data_2_in,
     input   wire[`FUNCT_BUS]    funct_in,
     input   wire[`DATA_BUS]     operand_1_in,
     input   wire[`DATA_BUS]     operand_2_in,
@@ -27,10 +27,10 @@ module  ID_EX(
     // to EX stage
     output  wire                ram_en_out,
     output  wire                ram_write_en_out,
-    output  wire[3:0]           ram_write_sel_out,
-    output  wire[`DATA_BUS]     ram_write_data_out,
 
     output  wire                ram_read_flag_out,
+    output  wire[`INST_OP_BUS]  inst_op_out,
+    output  wire[`DATA_BUS]     reg_data_2_out,
     output  wire[`FUNCT_BUS]    funct_out,
     output  wire[`DATA_BUS]     operand_1_out,
     output  wire[`DATA_BUS]     operand_2_out,
@@ -57,24 +57,6 @@ module  ID_EX(
         .out                    (ram_write_en_out)
     );
 
-    PipelineDeliver #(4)    ff_ram_write_sel(
-        .clk                    (clk),
-        .rst                    (rst),
-        .stall_current_stage    (stall_current_stage),
-        .stall_next_stage       (stall_next_stage),
-        .in                     (ram_write_sel_in),
-        .out                    (ram_write_sel_out)
-    );
-
-    PipelineDeliver #(`DATA_BUS_WIDTH)  ff_ram_write_data(
-        .clk                    (clk),
-        .rst                    (rst),
-        .stall_current_stage    (stall_current_stage),
-        .stall_next_stage       (stall_next_stage),
-        .in                     (ram_write_data_in),
-        .out                    (ram_write_data_out)
-    );
-
     PipelineDeliver #(1)    ff_ram_read_flag(
         .clk                    (clk),
         .rst                    (rst),
@@ -82,6 +64,24 @@ module  ID_EX(
         .stall_next_stage       (stall_next_stage),
         .in                     (ram_read_flag_in),
         .out                    (ram_read_flag_out)
+    );
+
+    PipelineDeliver #(`INST_OP_BUS_WIDTH)   ff_inst_op(
+        .clk                    (clk),
+        .rst                    (rst),
+        .stall_current_stage    (stall_current_stage),
+        .stall_next_stage       (stall_next_stage),
+        .in                     (inst_op_in),
+        .out                    (inst_op_out)
+    );
+
+    PipelineDeliver #(`DATA_BUS_WIDTH)  ff_reg_data_2(
+        .clk                    (clk),              
+        .rst                    (rst),
+        .stall_current_stage    (stall_current_stage),
+        .stall_next_stage       (stall_next_stage),
+        .in                     (reg_data_2_in),          
+        .out                    (reg_data_2_out)                  
     );
 
     PipelineDeliver #(`FUNCT_BUS_WIDTH) ff_funct(

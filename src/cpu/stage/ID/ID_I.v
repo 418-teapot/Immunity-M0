@@ -29,9 +29,6 @@ module  ID_I(
     // to RAM
     output  wire                ram_en,
     output  wire                ram_write_en,
-    output  wire[3:0]           ram_write_sel,
-    output  wire[`DATA_BUS]     ram_write_data,
-
     // to EX stage
     output  wire                ram_read_flag,
     output  reg [`DATA_BUS]     operand_1,
@@ -155,8 +152,6 @@ module  ID_I(
         // to RAM
         .ram_en             (ram_en),
         .ram_write_en       (ram_write_en),
-        .ram_write_sel      (ram_write_sel),
-        .ram_write_data     (ram_write_data),
 
         // to EX stage
         .ram_read_flag      (ram_read_flag),

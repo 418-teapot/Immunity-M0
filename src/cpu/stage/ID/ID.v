@@ -34,11 +34,11 @@ module  ID(
     // to RAM
     output  wire                ram_en,
     output  wire                ram_write_en,
-    output  wire[3:0]           ram_write_sel,
-    output  wire[`DATA_BUS]     ram_write_data,
 
     // to EX stage
     output  wire                ram_read_flag,
+    output  wire[`INST_OP_BUS]  inst_op,
+    output  wire[`DATA_BUS]     reg_data_2,
     output  wire[`FUNCT_BUS]    funct,
     output  reg [`DATA_BUS]     operand_1,
     output  reg [`DATA_BUS]     operand_2,
@@ -48,13 +48,14 @@ module  ID(
 );
 
     assign  id_stall_request    = load_related_1 || load_related_2;
+    assign  reg_data_2          = reg_val_mux_data_2;
 
     wire                    inst_r;
     wire                    inst_i;
     wire                    inst_j;
     wire[`INST_OP_TYPE_BUS] op_type = {inst_r, inst_i, inst_j};
 
-    wire[`INST_OP_BUS]      inst_op     = inst[`SEG_OPCODE];
+    assign                  inst_op     = inst[`SEG_OPCODE];
     wire[`REG_ADDR_BUS]     inst_rt     = inst[`SEG_RT];
     wire[`FUNCT_BUS]        inst_funct  = inst[`SEG_FUNCT];
 
@@ -115,8 +116,6 @@ module  ID(
         // to RAM
         .ram_en             (ram_en),
         .ram_write_en       (ram_write_en),
-        .ram_write_sel      (ram_write_sel),
-        .ram_write_data     (ram_write_data),
 
         // to EX stage
         .ram_read_flag      (ram_read_flag),

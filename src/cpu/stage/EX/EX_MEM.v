@@ -13,9 +13,9 @@ module  EX_MEM(
     // from EX stage
     input   wire                ram_en_in,
     input   wire                ram_write_en_in,
-    input   wire[3:0]           ram_write_sel_in,
-    input   wire[`DATA_BUS]     ram_write_data_in,
 
+    input   wire[`INST_OP_BUS]  inst_op_in,
+    input   wire[`DATA_BUS]     reg_data_2_in,
     input   wire[`DATA_BUS]     result_in,
     input   wire                write_reg_en_in,
     input   wire[`REG_ADDR_BUS] write_reg_addr_in,
@@ -26,9 +26,9 @@ module  EX_MEM(
     // to MEM stage
     output  wire                ram_en_out,
     output  wire                ram_write_en_out,
-    output  wire[3:0]           ram_write_sel_out,
-    output  wire[`DATA_BUS]     ram_write_data_out,
 
+    output  wire[`INST_OP_BUS]  inst_op_out,
+    output  wire[`DATA_BUS]     reg_data_2_out,
     output  wire[`DATA_BUS]     result_out,
     output  wire                write_reg_en_out,
     output  wire[`REG_ADDR_BUS] write_reg_addr_out,
@@ -55,22 +55,22 @@ module  EX_MEM(
         .out                    (ram_write_en_out)
     );
 
-    PipelineDeliver #(4)    ff_ram_write_sel(
+    PipelineDeliver #(`INST_OP_BUS_WIDTH)   ff_inst_op(
         .clk                    (clk),
         .rst                    (rst),
         .stall_current_stage    (stall_current_stage),
         .stall_next_stage       (stall_next_stage),
-        .in                     (ram_write_sel_in),
-        .out                    (ram_write_sel_out)
+        .in                     (inst_op_in),
+        .out                    (inst_op_out)
     );
 
-    PipelineDeliver #(`DATA_BUS_WIDTH)  ff_ram_write_data(
-        .clk                    (clk),
+    PipelineDeliver #(`DATA_BUS_WIDTH)    ff_reg_data_2(
+        .clk                    (clk),              
         .rst                    (rst),
         .stall_current_stage    (stall_current_stage),
         .stall_next_stage       (stall_next_stage),
-        .in                     (ram_write_data_in),
-        .out                    (ram_write_data_out)
+        .in                     (reg_data_2_in),         
+        .out                    (reg_data_2_out)
     );
 
     PipelineDeliver #(`DATA_BUS_WIDTH)    ff_result(

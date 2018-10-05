@@ -10,10 +10,10 @@ module  EX(
     // from ID stage
     input   wire                ram_en_in,
     input   wire                ram_write_en_in,
-    input   wire[3:0]           ram_write_sel_in,
-    input   wire[`DATA_BUS]     ram_write_data_in,
 
     input   wire                ram_read_flag,
+    input   wire[`INST_OP_BUS]  inst_op_in,
+    input   wire[`DATA_BUS]     reg_data_2_in,
     input   wire[`FUNCT_BUS]    funct,
     input   wire[`DATA_BUS]     operand_1,
     input   wire[`DATA_BUS]     operand_2,
@@ -34,9 +34,9 @@ module  EX(
     // to MEM stage
     output  wire                ram_en_out,
     output  wire                ram_write_en_out,
-    output  wire[3:0]           ram_write_sel_out,
-    output  wire[`DATA_BUS]     ram_write_data_out,
 
+    output  wire[`INST_OP_BUS]  inst_op_out,
+    output  wire[`DATA_BUS]     reg_data_2_out,
     output  wire[`DATA_BUS]     result_out,
     output  wire                write_reg_en_out,
     output  wire[`REG_ADDR_BUS] write_reg_addr_out,
@@ -48,14 +48,14 @@ module  EX(
     reg [`DATA_BUS] result;
     reg             write_reg_en;
 
+    assign  inst_op_out         = (rst == `RST_ENABLE) ? 6'b000000      : inst_op_in;
+    assign  reg_data_2_out      = (rst == `RST_ENABLE) ? `ZERO_WORD     : reg_data_2_in;
     assign  write_reg_en_out    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : write_reg_en;
     assign  write_reg_addr_out  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : write_reg_addr_in;
     assign  result_out          = (rst == `RST_ENABLE) ? `ZERO_WORD     : result;
 
     assign  ram_en_out          = (rst == `RST_ENABLE) ? `CHIP_DISABLE  : ram_en_in;
     assign  ram_write_en_out    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : ram_write_en_in;
-    assign  ram_write_sel_out   = (rst == `RST_ENABLE) ? 4'b0000        : ram_write_sel_in;
-    assign  ram_write_data_out  = (rst == `RST_ENABLE) ? `ZERO_WORD     : ram_write_data_in;
 
     assign  ex_load_flag        = (rst == `RST_ENABLE) ? `FALSE         : ram_read_flag;
 

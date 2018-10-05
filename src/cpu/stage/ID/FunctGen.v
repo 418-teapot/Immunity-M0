@@ -32,8 +32,10 @@ module FunctGen(
             `OP_ANDI:       funct <= `FUNCT_AND;
             `OP_XORI:       funct <= `FUNCT_XOR;
             `OP_LUI:        funct <= `FUNCT_OR;
-            `OP_LB, `OP_LBU, `OP_LH, `OP_LHU, `OP_LW,
+            `OP_LB, `OP_LBU, `OP_LH, `OP_LHU,
+            `OP_LW, `OP_LWL, `OP_LWR,
             `OP_SB, `OP_SH, `OP_SW, 
+            `OP_SWL, `OP_SWR,
             `OP_ADDI:       funct <= `FUNCT_ADD;
             `OP_ADDIU:      funct <= `FUNCT_ADDU;
             `OP_SLTI:       funct <= `FUNCT_SLT;

@@ -28,8 +28,6 @@ module  ID_SL(
     // to RAM
     output  wire                ram_en,
     output  wire                ram_write_en,
-    output  reg [3:0]           ram_write_sel,
-    output  reg [`DATA_BUS]     ram_write_data,
 
     // to EX stage
     output  wire                ram_read_flag,
@@ -73,19 +71,22 @@ module  ID_SL(
             reg_addr_1      <= `ZERO_REG_ADDR;
             reg_read_en_2   <= `READ_DISABLE;
             reg_addr_2      <= `ZERO_REG_ADDR;
-        end else if (ram_write_flag == `TRUE)   begin
-            reg_read_en_1   <= `READ_ENABLE;
-            reg_addr_1      <= inst_rs;
-            reg_read_en_2   <= `READ_ENABLE;
-            reg_addr_2      <= inst_rt;
         end else    begin
             case (inst_op)
 
-                `OP_LW:   begin
+                `OP_LB, `OP_LBU, `OP_LH, `OP_LHU, `OP_LW:   begin
                     reg_read_en_1   <= `READ_ENABLE;
                     reg_addr_1      <= inst_rs;
                     reg_read_en_2   <= `READ_DISABLE;
                     reg_addr_2      <= `ZERO_REG_ADDR;
+                end
+
+                `OP_LWL, `OP_LWR,
+                `OP_SB, `OP_SH, `OP_SW, `OP_SWL, `OP_SWR:   begin
+                    reg_read_en_1   <= `READ_ENABLE;
+                    reg_addr_1      <= inst_rs;
+                    reg_read_en_2   <= `READ_ENABLE;
+                    reg_addr_2      <= inst_rt;
                 end
 
                 default:    begin
@@ -100,35 +101,15 @@ module  ID_SL(
     end
 
     // generate write information
-    assign  write_reg_en    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : (ram_read_flag == `TRUE) ? `WRITE_ENABLE  : `WRITE_DISABLE;
-    assign  write_reg_addr  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : (ram_read_flag == `TRUE) ? inst_rt        : `ZERO_REG_ADDR;    
+    assign  write_reg_en    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : 
+                              (ram_read_flag == `TRUE) ? `WRITE_ENABLE  : `WRITE_DISABLE;
+    assign  write_reg_addr  = (rst == `RST_ENABLE) ? `ZERO_REG_ADDR : 
+                              (ram_read_flag == `TRUE) ? inst_rt        : `ZERO_REG_ADDR;    
 
     // generate RAM information
     assign  ram_en          = (rst == `RST_ENABLE) ? `CHIP_DISABLE :
                               (inst_sl == `TRUE) ? `CHIP_ENABLE : `CHIP_DISABLE;
     assign  ram_write_en    = (rst == `RST_ENABLE) ? `WRITE_DISABLE : 
                               (ram_write_flag == `TRUE) ? `WRITE_ENABLE : `WRITE_DISABLE;
-    always @ (*)    begin
-        if (rst == `RST_ENABLE) begin
-            ram_write_sel   <= 4'b0000;
-            ram_write_data  <= `ZERO_WORD;
-        end else if (ram_read_flag == `TRUE)    begin
-            ram_write_sel   <= 4'b0000;
-            ram_write_data  <= `ZERO_WORD;
-        end else    begin
-            case (inst_op)
-
-                `OP_SW:     begin
-                    ram_write_sel   <= 4'b1111;
-                    ram_write_data  <= reg_val_mux_data_2;
-                end
-
-                default:    begin
-                    ram_write_sel   <= 4'b0000;
-                    ram_write_data  <= `ZERO_WORD;
-                end
-            endcase
-        end
-    end
 
 endmodule   

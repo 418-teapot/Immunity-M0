@@ -13,7 +13,7 @@ module  Immunity(
     output  wire            ram_en,
     output  wire            ram_write_en,
     output  wire[3:0]       ram_write_sel,
-    output  wire[`ADDR_BUS] ram_write_addr,
+    output  wire[`ADDR_BUS] ram_addr,
     output  wire[`DATA_BUS] ram_write_data,
     input   wire[`DATA_BUS] ram_read_data
 );
@@ -31,10 +31,10 @@ module  Immunity(
 
     wire                id_ram_en_o;
     wire                id_ram_write_en_o;
-    wire[3:0]           id_ram_write_sel_o;
-    wire[`DATA_BUS]     id_ram_write_data_o;
     wire                id_ram_read_flag_o;
 
+    wire[`INST_OP_BUS]  id_inst_op_o;
+    wire[`DATA_BUS]     id_reg_data_2_o;
     wire[`FUNCT_BUS]    id_funct_o;
     wire[`DATA_BUS]     id_operand_1_o;
     wire[`DATA_BUS]     id_operand_2_o;
@@ -45,10 +45,10 @@ module  Immunity(
     // EX stage
     wire                ex_ram_en_i;
     wire                ex_ram_write_en_i;
-    wire[3:0]           ex_ram_write_sel_i;
-    wire[`DATA_BUS]     ex_ram_write_data_i;
 
     wire                ex_ram_read_flag_i;
+    wire[`INST_OP_BUS]  ex_inst_op_i;
+    wire[`DATA_BUS]     ex_reg_data_2_i;
     wire[`FUNCT_BUS]    ex_funct_i;
     wire[`DATA_BUS]     ex_operand_1_i;
     wire[`DATA_BUS]     ex_operand_2_i;
@@ -60,9 +60,9 @@ module  Immunity(
 
     wire                ex_ram_en_o;
     wire                ex_ram_write_en_o;
-    wire[3:0]           ex_ram_write_sel_o;
-    wire[`DATA_BUS]     ex_ram_write_data_o;
 
+    wire[`INST_OP_BUS]  ex_inst_op_o;
+    wire[`DATA_BUS]     ex_reg_data_2_o;
     wire[`DATA_BUS]     ex_result_o;
     wire                ex_write_reg_en_o;
     wire[`REG_ADDR_BUS] ex_write_reg_addr_o;
@@ -73,9 +73,9 @@ module  Immunity(
     // MEM stage
     wire                mem_ram_en_i;
     wire                mem_ram_write_en_i;
-    wire[3:0]           mem_ram_write_sel_i;
-    wire[`DATA_BUS]     mem_ram_write_data_i;
 
+    wire[`INST_OP_BUS]  mem_inst_op_i;
+    wire[`DATA_BUS]     mem_reg_data_2_i;
     wire[`DATA_BUS]     mem_result_i;
     wire                mem_write_reg_en_i;
     wire[`REG_ADDR_BUS] mem_write_reg_addr_i;
@@ -201,11 +201,11 @@ module  Immunity(
         // to RAM
         .ram_en             (id_ram_en_o),
         .ram_write_en       (id_ram_write_en_o),
-        .ram_write_sel      (id_ram_write_sel_o),
-        .ram_write_data     (id_ram_write_data_o),
 
         // to EX stage
         .ram_read_flag      (id_ram_read_flag_o),
+        .inst_op            (id_inst_op_o),
+        .reg_data_2         (id_reg_data_2_o),
         .funct              (id_funct_o),
         .operand_1          (id_operand_1_o),
         .operand_2          (id_operand_2_o),
@@ -225,10 +225,10 @@ module  Immunity(
         // from ID stage
         .ram_en_in          (id_ram_en_o),
         .ram_write_en_in    (id_ram_write_en_o),
-        .ram_write_sel_in   (id_ram_write_sel_o),
-        .ram_write_data_in  (id_ram_write_data_o),
         
         .ram_read_flag_in   (id_ram_read_flag_o),
+        .inst_op_in         (id_inst_op_o),
+        .reg_data_2_in      (id_reg_data_2_o),
         .funct_in           (id_funct_o),
         .operand_1_in       (id_operand_1_o),
         .operand_2_in       (id_operand_2_o),
@@ -239,10 +239,10 @@ module  Immunity(
         // to EX stage
         .ram_en_out         (ex_ram_en_i),
         .ram_write_en_out   (ex_ram_write_en_i),
-        .ram_write_sel_out  (ex_ram_write_sel_i),
-        .ram_write_data_out (ex_ram_write_data_i),
 
         .ram_read_flag_out  (ex_ram_read_flag_i),
+        .inst_op_out        (ex_inst_op_i),
+        .reg_data_2_out     (ex_reg_data_2_i),
         .funct_out          (ex_funct_i),
         .operand_1_out      (ex_operand_1_i),
         .operand_2_out      (ex_operand_2_i),
@@ -258,10 +258,10 @@ module  Immunity(
         // from ID stage
         .ram_en_in          (ex_ram_en_i),
         .ram_write_en_in    (ex_ram_write_en_i),
-        .ram_write_sel_in   (ex_ram_write_sel_i),
-        .ram_write_data_in  (ex_ram_write_data_i),
 
         .ram_read_flag      (ex_ram_read_flag_i),
+        .inst_op_in         (ex_inst_op_i),
+        .reg_data_2_in      (ex_reg_data_2_i),
         .funct              (ex_funct_i),
         .operand_1          (ex_operand_1_i),
         .operand_2          (ex_operand_2_i),
@@ -282,9 +282,9 @@ module  Immunity(
         // to MEM stage
         .ram_en_out         (ex_ram_en_o),
         .ram_write_en_out   (ex_ram_write_en_o),
-        .ram_write_sel_out  (ex_ram_write_sel_o),
-        .ram_write_data_out (ex_ram_write_data_o),
 
+        .inst_op_out        (ex_inst_op_o),
+        .reg_data_2_out     (ex_reg_data_2_o),
         .result_out         (ex_result_o),
         .write_reg_en_out   (ex_write_reg_en_o),
         .write_reg_addr_out (ex_write_reg_addr_o),
@@ -304,9 +304,9 @@ module  Immunity(
         // from EX stage
         .ram_en_in          (ex_ram_en_o),
         .ram_write_en_in    (ex_ram_write_en_o),
-        .ram_write_sel_in   (ex_ram_write_sel_o),
-        .ram_write_data_in  (ex_ram_write_data_o),
 
+        .inst_op_in         (ex_inst_op_o),
+        .reg_data_2_in      (ex_reg_data_2_o),
         .result_in          (ex_result_o),
         .write_reg_en_in    (ex_write_reg_en_o),
         .write_reg_addr_in  (ex_write_reg_addr_o),
@@ -317,9 +317,9 @@ module  Immunity(
         // to MEM stage
         .ram_en_out         (mem_ram_en_i),
         .ram_write_en_out   (mem_ram_write_en_i),
-        .ram_write_sel_out  (mem_ram_write_sel_i),
-        .ram_write_data_out (mem_ram_write_data_i),
 
+        .inst_op_out        (mem_inst_op_i),
+        .reg_data_2_out     (mem_reg_data_2_i),
         .result_out         (mem_result_i),
         .write_reg_en_out   (mem_write_reg_en_i),
         .write_reg_addr_out (mem_write_reg_addr_i),
@@ -337,9 +337,9 @@ module  Immunity(
         // from EX stage
         .ram_en_in          (mem_ram_en_i),
         .ram_write_en_in    (mem_ram_write_en_i),
-        .ram_write_sel_in   (mem_ram_write_sel_i),
-        .ram_write_data_in  (mem_ram_write_data_i),
 
+        .inst_op            (mem_inst_op_i),
+        .reg_data_2         (mem_reg_data_2_i),
         .result_in          (mem_result_i),
         .write_reg_en_in    (mem_write_reg_en_i),
         .write_reg_addr_in  (mem_write_reg_addr_i),
@@ -351,7 +351,7 @@ module  Immunity(
         .ram_en_out         (ram_en),
         .ram_write_en_out   (ram_write_en),
         .ram_write_sel_out  (ram_write_sel),
-        .ram_write_addr_out (ram_write_addr),
+        .ram_addr_out       (ram_addr),
         .ram_write_data_out (ram_write_data),
 
         // to WB stage
