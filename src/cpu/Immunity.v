@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "/define/global_def.v"
+`include "./define/global_def.v"
 
 module  Immunity(
     input   wire            clk,
